@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <title>Mentor Sessions</title>
+</head>
+<body>
+    <h2>Mentorship Requests</h2>
+    {% for session in sessions %}
+        <p>Startup ID: {{ session.startup_id }} | Date: {{ session.date }} | Status: {{ session.status }}</p>
+        {% if session.status == "Pending" %}
+            <a href="{{ url_for('approve_session', session_id=session.id) }}">Approve</a> |
+            <a href="{{ url_for('reject_session', session_id=session.id) }}">Reject</a>
+        {% endif %}
+    {% endfor %}
+</body>
+</html>

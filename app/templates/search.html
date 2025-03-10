@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <title>Search</title>
+</head>
+<body>
+    <h2>Search Users</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <p>{{ form.search_query.label }} {{ form.search_query() }}</p>
+        <p>{{ form.filter_by.label }} {{ form.filter_by() }}</p>
+        <p>{{ form.submit() }}</p>
+    </form>
+
+    <h3>Search Results</h3>
+    {% for user in results %}
+        <p>{{ user.username }} - {{ user.role }}</p>
+    {% endfor %}
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to DIGIHUB</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Welcome to DIGIHUB</h1>
+        <p>Your gateway to Kenya's startup ecosystem.</p>
+    </header>
+    <nav>
+        <a href="{{ url_for('routes.login') }}">Login</a> |
+        <a href="{{ url_for('routes.register') }}">Register</a>
+    </nav>
+    <main>
+        <section>
+            <h2>About DIGIHUB</h2>
+            <p>DIGIHUB connects startups, investors, and mentors to foster innovation and entrepreneurship in Kenya.</p>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 DIGIHUB. All rights reserved.</p>
+    </footer>
+</body>
+</html>
+

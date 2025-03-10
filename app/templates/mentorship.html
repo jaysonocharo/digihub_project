@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <title>Mentorship</title>
+</head>
+<body>
+    <h2>Request a Mentorship Session</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <p>{{ form.mentor_id.label }} {{ form.mentor_id() }}</p>
+        <p>{{ form.date.label }} {{ form.date() }}</p>
+        <p>{{ form.submit() }}</p>
+    </form>
+
+    <h3>Your Mentorship Requests</h3>
+    {% for session in sessions %}
+        <p>Mentor: {{ session.mentor_id }} | Date: {{ session.date }} | Status: {{ session.status }}</p>
+    {% endfor %}
+</body>
+</html>

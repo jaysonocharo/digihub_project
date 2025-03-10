@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <title>Edit Profile</title>
+</head>
+<body>
+    <h2>Edit Profile</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <p>{{ form.username.label }} {{ form.username() }}</p>
+        <p>{{ form.bio.label }} {{ form.bio() }}</p>
+        {% if current_user.role == 'startup' %}
+            <p>{{ form.company_name.label }} {{ form.company_name() }}</p>
+        {% endif %}
+        <p>{{ form.industry.label }} {{ form.industry() }}</p>
+        <p>{{ form.contact_info.label }} {{ form.contact_info() }}</p>
+        <p>{{ form.linkedin_profile.label }} {{ form.linkedin_profile() }}</p>
+        <p>{{ form.submit() }}</p>
+    </form>
+</body>
+</html>
