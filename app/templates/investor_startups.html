@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Explore Startups</h2>
+    <p class="text-center">Discover innovative startups to invest in.</p>
+
+    <div class="row">
+        {% for startup in startups %}
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <img src="{{ startup.profile_image or 'https://via.placeholder.com/300x200' }}" class="card-img-top" alt="Startup Image">
+                <div class="card-body">
+                    <h5 class="card-title">{{ startup.username }}</h5>
+                    <p class="card-text">{{ startup.bio[:100] }}...</p>
+                    <a href="{{ url_for('routes.view_startup', startup_id=startup.id) }}" class="btn btn-primary">View Profile</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

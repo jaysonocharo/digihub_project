@@ -1,6 +1,5 @@
-from flask import render_template, url_for, flash, redirect, request, abort
+from flask import render_template, url_for, flash, redirect, request, abort, Blueprint, session
 #from app import app, db, bcrypt
-from flask import Blueprint, session
 from app import db, bcrypt  # Import only what is needed
 from flask_login import login_user, logout_user, login_required, current_user
 
@@ -10,30 +9,15 @@ routes = Blueprint("routes", __name__)
 
 from app.forms import RegistrationForm, LoginForm, MentorshipForm, SearchForm, EditProfileForm
 from datetime import datetime
-from app.models import User, MentorshipSession, ActivityLog
-from flask_login import login_user, logout_user, login_required, current_user
+from app.models import User, MentorshipSession, ActivityLog, Startup, Investor
 from app.decorators import role_required
 
 @routes.route("/")
 def home():
-    return render_template("home.html")  # Make sure home.html exists
+    return render_template("home.html")  
 
-
-from flask import render_template, url_for, flash, redirect, request, Blueprint
-from app import db, bcrypt
-from flask_login import login_user, logout_user, login_required, current_user
-from app.forms import RegistrationForm, LoginForm
-from app.models import User
-
-routes = Blueprint("routes", __name__)
-
-@routes.route("/")
-def home():
-    return render_template("home.html")
-
-
-
-
+  
+#original
 @routes.route("/register", methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
@@ -76,24 +60,12 @@ def login():
 
     return render_template('login.html', form=form)
 
-# @routes.route("/login", methods=['GET', 'POST'])
-# def login():
-
-#     form = LoginForm()
-#     if form.validate_on_submit():
-#         user = User.query.filter_by(email=form.email.data).first()
-#         if user and bcrypt.check_password_hash(user.password, form.password.data):
-#             login_user(user, remember=form.remember_me.data if hasattr(form, 'remember_me') else False)
-#             flash(f'Welcome back, {user.username}!', 'success')
-#             return redirect(url_for('routes.dashboard'))
-#         else:
-#             flash('Login failed. Please check your email and password.', 'danger')
-#     return render_template('login.html', form=form)
 
 @routes.route("/dashboard")
 @login_required
 def dashboard():
     return render_template('dashboard.html', user=current_user)
+
 
 @routes.route("/logout")
 @login_required
@@ -120,6 +92,8 @@ def investor_dashboard():
 def mentor_dashboard():
     return render_template('mentor.html')
 
+
+#Editprofileroute
 @routes.route("/profile", methods=['GET', 'POST'])
 @login_required
 def profile():
@@ -167,6 +141,8 @@ def mentorship():
     form.mentor_id.choices = [(m.id, m.username) for m in User.query.filter_by(role='mentor').all()]
 
     if form.validate_on_submit():
+        print(f"✅ Form validated: Mentor ID={form.mentor_id.data}, Date={form.date.data}")
+
         session = MentorshipSession(
             mentor_id=form.mentor_id.data,
             startup_id=current_user.id,
@@ -175,11 +151,42 @@ def mentorship():
         )
         db.session.add(session)
         db.session.commit()
+
+        print("✅ Session added to database!")
+
         flash('Mentorship session requested!', 'success')
         return redirect(url_for('routes.mentorship'))
 
+    else:
+        print("❌ Form validation failed. Errors:", form.errors)
+
     sessions = MentorshipSession.query.filter_by(startup_id=current_user.id).all()
     return render_template('mentorship.html', form=form, sessions=sessions)
+
+# @routes.route("/mentorship", methods=['GET', 'POST'])
+# @login_required
+# def mentorship():
+#     if current_user.role != 'startup':
+#         abort(403)  # Only startups can request mentorship
+
+#     form = MentorshipForm()
+#     form.mentor_id.choices = [(m.id, m.username) for m in User.query.filter_by(role='mentor').all()]
+
+#     if form.validate_on_submit():
+#         session = MentorshipSession(
+#             mentor_id=form.mentor_id.data,
+#             startup_id=current_user.id,
+#             date=form.date.data,
+#             status="Pending"
+#         )
+#         db.session.add(session)
+#         db.session.commit()
+#         flash('Mentorship session requested!', 'success')
+#         return redirect(url_for('routes.mentorship'))
+
+#     sessions = MentorshipSession.query.filter_by(startup_id=current_user.id).all()
+#     return render_template('mentorship.html', form=form, sessions=sessions)
+
 
 
 
@@ -190,8 +197,11 @@ def mentor_sessions():
         abort(403)  # Only mentors can access this page
 
     sessions = MentorshipSession.query.filter_by(mentor_id=current_user.id).all()
+    for session in sessions:
+        session.startup = User.query.get(session.startup_id)
 
     return render_template('mentor_sessions.html', sessions=sessions)
+
 
 @routes.route("/approve_session/<int:session_id>")
 @login_required
@@ -338,3 +348,33 @@ def activity_logs():
 
     logs = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).all()
     return render_template('activity_log.html', logs=logs)
+
+
+#route for investors to view startups
+@routes.route('/investor/startups')
+@login_required
+def investor_startups():
+    if current_user.role != 'investor':
+        abort(403)  # Restrict access to only investors
+
+    startups = User.query.filter_by(role='startup', approved=True).all()
+    return render_template('investor_startups.html', startups=startups)
+
+
+#route for viewing individual startups(seeing more detail about a startup)
+@routes.route('/startup/<int:startup_id>')
+@login_required
+def view_startup(startup_id):
+    startup = User.query.get_or_404(startup_id)
+    if startup.role != 'startup':
+        abort(404)
+
+    return render_template('startup_profile.html', startup=startup)
+
+
+@routes.route('/startups')
+def startups():
+    startups = Startup.query.all()
+    return render_template('startups.html', startups=startups)
+
+

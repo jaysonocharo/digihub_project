@@ -9,10 +9,22 @@
     <h2>Request a Mentorship Session</h2>
     <form method="POST">
         {{ form.hidden_tag() }}
+        
+        <label for="mentor">Select Mentor:</label>
+        {{ form.mentor_id(class="form-control") }}
+    
+        <label for="date">Choose Date:</label>
+        {{ form.date(class="form-control", type="date") }}
+    
+        <button type="submit">Request Mentorship</button>
+    </form>
+    
+    <!-- <form method="POST">
+        {{ form.hidden_tag() }}
         <p>{{ form.mentor_id.label }} {{ form.mentor_id() }}</p>
         <p>{{ form.date.label }} {{ form.date() }}</p>
         <p>{{ form.submit() }}</p>
-    </form>
+    </form> -->
 
     <h3>Your Mentorship Requests</h3>
     {% for session in sessions %}

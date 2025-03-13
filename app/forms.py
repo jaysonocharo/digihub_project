@@ -1,7 +1,12 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, SelectField, TextAreaField, StringField, BooleanField
+from wtforms import StringField, PasswordField, SubmitField, SelectField, TextAreaField, StringField, BooleanField, DateField, IntegerField
 from wtforms.validators import DataRequired, Length, Email, EqualTo
+from datetime import date
+from wtforms.validators import ValidationError, DataRequired, NumberRange
 
+
+
+#original reg. form
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=2, max=50)])
     email = StringField('Email', validators=[DataRequired(), Email()])
@@ -25,11 +30,17 @@ class EditProfileForm(FlaskForm):
     linkedin_profile = StringField('LinkedIn Profile')
     submit = SubmitField('Update Profile')
 
-from wtforms import DateTimeField
+
+# class MentorshipForm(FlaskForm):
+#     mentor_id = SelectField('Select Mentor', coerce=int, validators=[DataRequired()])
+#     date = DateField('Session Date', format='%Y-%m-%d', validators=[DataRequired()])
+#     submit = SubmitField('Request Mentorship')
+
+
 
 class MentorshipForm(FlaskForm):
     mentor_id = SelectField('Select Mentor', coerce=int, validators=[DataRequired()])
-    date = DateTimeField('Session Date', format='%Y-%m-%d %H:%M', validators=[DataRequired()])
+    date = DateField('Session Date', format='%Y-%m-%d %H:%M', validators=[DataRequired()])
     submit = SubmitField('Request Mentorship')
 
 
@@ -42,3 +53,6 @@ class SearchForm(FlaskForm):
         ('mentors', 'Mentors')
     ])
     submit = SubmitField('Search')
+
+
+

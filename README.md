@@ -134,3 +134,62 @@ This project is licensed under the MIT License. Feel free to contribute and impr
 
 🚀 **DIGIHUB - Empowering Startups in Kenya!**
 
+<!--Original base.html-->
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DIGIHUB{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="{{ url_for('routes.home') }}">DIGIHUB</a>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('routes.login') }}">Login</a></li> 
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('routes.register') }}">Register</a></li> 
+            <li>
+                {% if not current_user.is_authenticated %}
+                    <a href="{{ url_for('routes.home') }}">Home</a>
+                    <a href="{{ url_for('routes.register') }}">Register</a>
+                {% endif %}
+            </li>
+        </ul>
+    </nav>
+
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=True) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        
+        {% if current_user.is_authenticated and current_user.role == 'investor' %}
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/about">About</a>
+                </li>
+            </ul>        
+        {% endif %}
+
+        {% if current_user.is_authenticated %}
+            {% if current_user.role == 'investor' %}
+                <ul><li><a href="{{ url_for('routes.investor_startups') }}">Browse Startups</a></li></ul>
+            {% endif %}
+        {% endif %}
+    
+
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>  -->

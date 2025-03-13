@@ -11,9 +11,9 @@ bcrypt = Bcrypt()
 login_manager = LoginManager()
 login_manager.login_view = 'routes.login'
 
+
 def create_app():
     app = Flask(__name__)
-
 
 
     # Flask Configurations
@@ -36,11 +36,12 @@ def create_app():
 
     # Register Blueprint
     from app.routes import routes
-    app.register_blueprint(routes, url_prefix='/')
+    app.register_blueprint(routes)
+    # app.register_blueprint(routes, url_prefix='/')
 
     # ✅ Wrap db.create_all() inside app.app_context()
-    with app.app_context():
-        db.create_all()
+    # with app.app_context():
+    #     db.create_all()
 
     return app
 

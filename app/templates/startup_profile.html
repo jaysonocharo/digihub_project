@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card">
+        <div class="row g-0">
+            <div class="col-md-4">
+                <img src="{{ startup.profile_image or 'https://via.placeholder.com/300x200' }}" class="img-fluid rounded-start" alt="Startup Image">
+            </div>
+            <div class="col-md-8">
+                <div class="card-body">
+                    <h2 class="card-title">{{ startup.username }}</h2>
+                    <p class="card-text"><strong>Industry:</strong> {{ startup.industry }}</p>
+                    <p class="card-text"><strong>Bio:</strong> {{ startup.bio }}</p>
+                    <p class="card-text"><strong>Website:</strong> <a href="{{ startup.website }}" target="_blank">{{ startup.website }}</a></p>
+                    <a href="mailto:{{ startup.email }}" class="btn btn-success">Contact Startup</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

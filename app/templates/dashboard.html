@@ -7,15 +7,28 @@
 </head>
 <body>
     <h2>Welcome to Your Dashboard</h2>
-    <p>You are logged in!</p>
-    <a href="{{ url_for('routes.logout') }}">Logout</a>
-    <a href="{{ url_for('routes.profile') }}">Edit Profile</a>
-    <a href="{{ url_for('routes.notifications') }}">View Notifications</a>
-    <a href="{{ url_for('routes.search') }}">Search Users</a>
-    {% if current_user.role == 'admin' %}
-        <a href="{{ url_for('routes.admin_dashboard') }}">Admin Dashboard</a>
+    {% if current_user.is_authenticated %}
+        <p>Hello, {{ current_user.username }}!</p>
+        <p>Your role: {{ current_user.role }}</p>
+        <p>You are logged in!</p>
+        <a href="{{ url_for('routes.logout') }}">Logout</a>
+        <a href="{{ url_for('routes.profile') }}">Edit Profile</a>
+        <a href="{{ url_for('routes.notifications') }}">View Notifications</a>
+        <a href="{{ url_for('routes.search') }}">Search Users</a>
+        {% if current_user.role == 'admin' %}
+            <a href="{{ url_for('routes.admin_dashboard') }}">Admin Dashboard</a>
+        {% endif %}
+        {% if current_user.role == 'investor' %}
+            <a href="{{ url_for('routes.matches') }}">Find Startup matches</a>
+            <a href="{{ url_for('routes.investor_startups') }}">Browse Startups</a>
+        {% endif %}
+        {% if current_user.role == 'startup' %}
+            <a href="{{ url_for('routes.mentorship') }}">Request Mentorship</a>
+        {% endif %}
+        {% if current_user.role == 'mentor' %}
+            <a href="{{ url_for('routes.mentor_sessions') }}">View Mentorship Sessions</a>
+        {% endif %}
     {% endif %}
-
 
 
 </body>
