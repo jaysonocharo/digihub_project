@@ -7,7 +7,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 routes = Blueprint("routes", __name__)
 
 
-from app.forms import RegistrationForm, LoginForm, MentorshipForm, SearchForm, EditProfileForm
+from app.forms import RegistrationForm, LoginForm, MentorshipForm, SearchForm, EditProfileForm, InvestorForm, StartupForm
 from datetime import datetime
 from app.models import User, MentorshipSession, ActivityLog, Startup, Investor
 from app.decorators import role_required
@@ -377,4 +377,45 @@ def startups():
     startups = Startup.query.all()
     return render_template('startups.html', startups=startups)
 
+
+@routes.route("/investor_form", methods=['GET', 'POST'])
+@login_required
+def investor_form():
+    if current_user.role != 'investor':
+        abort(403)  # Only investors can access this page
+
+    form = InvestorForm()
+    if form.validate_on_submit():
+        investor = Investor(user_id=current_user.id, 
+                            investment_range_min=form.investment_range_min.data, 
+                            investment_range_max=form.investment_range_max.data, 
+                            industry_focus=form.industry_focus.data, 
+                            description=form.description.data)
+        db.session.add(investor)
+        db.session.commit()
+        flash('Investor details saved!', 'success')
+        return redirect(url_for('routes.dashboard'))
+    
+    return render_template('investor_form.html', form=form)
+
+
+@routes.route("/startup_form", methods=['GET', 'POST'])
+@login_required
+def startup_form():
+    if current_user.role != 'startup':
+        abort(403)  # Only startups can access this page
+
+    form = StartupForm()
+    if form.validate_on_submit():
+        startup = Startup(user_id=current_user.id, 
+                          company_name=form.company_name.data, 
+                          industry=form.industry.data, 
+                          funding_needed=form.funding_needed.data, 
+                          description=form.description.data)
+        db.session.add(startup)
+        db.session.commit()
+        flash('Startup details saved!', 'success')
+        return redirect(url_for('routes.dashboard'))
+    
+    return render_template('startup_form.html', form=form)
 

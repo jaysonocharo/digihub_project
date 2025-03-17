@@ -54,5 +54,18 @@ class SearchForm(FlaskForm):
     ])
     submit = SubmitField('Search')
 
+#for startup and investor fields
+class StartupForm(FlaskForm):
+    company_name = StringField('Company Name', validators=[DataRequired()])
+    industry = StringField('Industry', validators=[DataRequired()])
+    funding_needed = IntegerField('Funding Needed (KES)', validators=[DataRequired()])
+    description = TextAreaField('Description')
+    submit = SubmitField('Save Startup Details')
 
+class InvestorForm(FlaskForm):
+    investment_range_min = IntegerField('Minimum Investment (KES)', validators=[DataRequired()])
+    investment_range_max = IntegerField('Maximum Investment (KES)', validators=[DataRequired()])
+    industry_focus = StringField('Industry Focus', validators=[DataRequired()])
+    description = TextAreaField('Description')
+    submit = SubmitField('Save Investor Details')
 

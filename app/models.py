@@ -43,21 +43,37 @@ class User(db.Model, UserMixin):
     def is_mentor(self):
         return self.role == 'mentor'
 
+
 class Startup(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    industry = db.Column(db.String(50), nullable=False)
-    funding_stage = db.Column(db.String(50), nullable=False)  # Seed, Series A, etc.
-    funding_needed = db.Column(db.Integer, nullable=False)  # Amount in KES
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    company_name = db.Column(db.String(100), nullable=False)
+    industry = db.Column(db.String(50), nullable=False)
+    funding_needed = db.Column(db.Integer, nullable=False)
+    description = db.Column(db.Text, nullable=True)
 
 class Investor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    industry_focus = db.Column(db.String(50), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     investment_range_min = db.Column(db.Integer, nullable=False)
     investment_range_max = db.Column(db.Integer, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    industry_focus = db.Column(db.String(50), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+#Origninal Startup & Investor field
+# class Startup(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     name = db.Column(db.String(100), nullable=False)
+#     industry = db.Column(db.String(50), nullable=False)
+#     funding_stage = db.Column(db.String(50), nullable=False)  # Seed, Series A, etc.
+#     funding_needed = db.Column(db.Integer, nullable=False)  # Amount in KES
+#     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+# class Investor(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     name = db.Column(db.String(100), nullable=False)
+#     industry_focus = db.Column(db.String(50), nullable=False)
+#     investment_range_min = db.Column(db.Integer, nullable=False)
+#     investment_range_max = db.Column(db.Integer, nullable=False)
+#     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 class MentorshipSession(db.Model):
     id = db.Column(db.Integer, primary_key=True)

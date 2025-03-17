@@ -28,6 +28,12 @@
         {% if current_user.role == 'mentor' %}
             <a href="{{ url_for('routes.mentor_sessions') }}">View Mentorship Sessions</a>
         {% endif %}
+        {% if current_user.role == 'investor' %}
+            <a href="{{ url_for('routes.investor_form') }}">Complete Investor Profile</a>
+        {% elif current_user.role == 'startup' %}
+            <a href="{{ url_for('routes.startup_form') }}">Complete Startup Profile</a>
+        {% endif %}
+
     {% endif %}
 
 
