@@ -11,6 +11,7 @@ from app.forms import RegistrationForm, LoginForm, MentorshipForm, SearchForm, E
 from datetime import datetime
 from app.models import User, MentorshipSession, ActivityLog, Startup, Investor
 from app.decorators import role_required
+from collections import defaultdict
 
 @routes.route("/")
 def home():
@@ -72,7 +73,7 @@ def dashboard():
 def logout():
     logout_user()
     flash('You have been logged out.', 'info')
-    return redirect(url_for('routes.login'))
+    return redirect(url_for('routes.home'))
 
 @routes.route("/admin")
 @login_required
@@ -163,32 +164,6 @@ def mentorship():
     sessions = MentorshipSession.query.filter_by(startup_id=current_user.id).all()
     return render_template('mentorship.html', form=form, sessions=sessions)
 
-# @routes.route("/mentorship", methods=['GET', 'POST'])
-# @login_required
-# def mentorship():
-#     if current_user.role != 'startup':
-#         abort(403)  # Only startups can request mentorship
-
-#     form = MentorshipForm()
-#     form.mentor_id.choices = [(m.id, m.username) for m in User.query.filter_by(role='mentor').all()]
-
-#     if form.validate_on_submit():
-#         session = MentorshipSession(
-#             mentor_id=form.mentor_id.data,
-#             startup_id=current_user.id,
-#             date=form.date.data,
-#             status="Pending"
-#         )
-#         db.session.add(session)
-#         db.session.commit()
-#         flash('Mentorship session requested!', 'success')
-#         return redirect(url_for('routes.mentorship'))
-
-#     sessions = MentorshipSession.query.filter_by(startup_id=current_user.id).all()
-#     return render_template('mentorship.html', form=form, sessions=sessions)
-
-
-
 
 @routes.route("/mentor_sessions", methods=['GET', 'POST'])
 @login_required
@@ -277,6 +252,30 @@ def search():
 
 
 
+# @routes.route("/admin_dashboard")
+# @login_required
+# def admin_dashboard():
+#     if current_user.role != 'admin':
+#         abort(403)
+
+#     startups = User.query.filter_by(role='startup').count()
+#     investors = User.query.filter_by(role='investor').count()
+#     mentors = User.query.filter_by(role='mentor').count()
+#     admins = User.query.filter_by(role='admin').count()
+
+#     # Get user signup trends
+#     users = User.query.all()
+#     signups_per_month = defaultdict(int)
+    
+#     for user in users:
+#         month = user.date_created.strftime('%Y-%m')  # Format: YYYY-MM
+#         signups_per_month[month] += 1
+    
+#     months = list(signups_per_month.keys())
+#     user_counts = list(signups_per_month.values())
+
+#     return render_template("admin_dashboard.html", startups=startups, investors=investors, mentors=mentors, admins=admins, months=months, user_counts=user_counts)
+
 @routes.route("/admin_dashboard")
 @login_required
 def admin_dashboard():
@@ -284,7 +283,21 @@ def admin_dashboard():
         abort(403)
 
     users = User.query.all()
-    return render_template('admin_dashboard.html', users=users)
+
+    startups = User.query.filter_by(role='startup').count()
+    investors = User.query.filter_by(role='investor').count()
+    mentors = User.query.filter_by(role='mentor').count()
+    admins = User.query.filter_by(role='admin').count()
+    
+    return render_template(
+        'admin_dashboard.html', 
+        users=users,
+        startups=startups,
+        investors=investors,
+        mentors=mentors,
+        admins=admins
+    )
+
 
 @routes.route("/approve_user/<int:user_id>")
 @login_required

@@ -1,14 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta charset="UTF-8">
-    <title>Notifications</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Notifications - DIGIHUB{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
     <h2>Notifications</h2>
-    {% for notification in notifications %}
-        <p>{{ notification.message }} - {{ notification.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
-    {% endfor %}
-</body>
-</html>
+
+    {% if notifications %}
+        <ul class="list-group mt-3">
+            {% for notification in notifications %}
+                <li class="list-group-item">
+                    {{ notification.message }} 
+                    <span class="text-muted">- {{ notification.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted mt-3">No notifications available.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+

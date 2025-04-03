@@ -1,34 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta charset="UTF-8">
-    <title>Mentorship</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Mentorship - DIGIHUB{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
     <h2>Request a Mentorship Session</h2>
-    <form method="POST">
+    
+    <form method="POST" class="mt-3">
         {{ form.hidden_tag() }}
         
-        <label for="mentor">Select Mentor:</label>
-        {{ form.mentor_id(class="form-control") }}
-    
-        <label for="date">Choose Date:</label>
-        {{ form.date(class="form-control", type="date") }}
-    
-        <button type="submit">Request Mentorship</button>
-    </form>
-    
-    <!-- <form method="POST">
-        {{ form.hidden_tag() }}
-        <p>{{ form.mentor_id.label }} {{ form.mentor_id() }}</p>
-        <p>{{ form.date.label }} {{ form.date() }}</p>
-        <p>{{ form.submit() }}</p>
-    </form> -->
+        <div class="mb-3">
+            <label for="mentor" class="form-label">Select Mentor:</label>
+            {{ form.mentor_id(class="form-control") }}
+        </div>
 
-    <h3>Your Mentorship Requests</h3>
-    {% for session in sessions %}
-        <p>Mentor: {{ session.mentor_id }} | Date: {{ session.date }} | Status: {{ session.status }}</p>
-    {% endfor %}
-</body>
-</html>
+        <div class="mb-3">
+            <label for="date" class="form-label">Choose Date:</label>
+            {{ form.date(class="form-control", type="date") }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Request Mentorship</button>
+    </form>
+
+    <h3 class="mt-4">Your Mentorship Requests</h3>
+    {% if sessions %}
+        <ul class="list-group">
+            {% for session in sessions %}
+                <li class="list-group-item">
+                    <strong>Mentor ID:</strong> {{ session.mentor_id }} | 
+                    <strong>Date:</strong> {{ session.date }} | 
+                    <strong>Status:</strong> {{ session.status }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted">No mentorship requests yet.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+

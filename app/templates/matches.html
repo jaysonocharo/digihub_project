@@ -1,16 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta charset="UTF-8">
-    <title>Investor-Startup Matches</title>
-</head>
-<body>
-    <h2>Investor-Startup Matches</h2>
-    {% for startup, investor in matches %}
-        <p><strong>Startup:</strong> {{ startup.name }} ({{ startup.industry }})</p>
-        <p><strong>Investor:</strong> {{ investor.name }} (Focus: {{ investor.industry_focus }})</p>
-        <hr>
-    {% endfor %}
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Investor-Startup Matches - DIGIHUB{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2>Investor-Startup Matches</h2>
+        
+        {% if matches %}
+            {% for startup, investor in matches %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <p><strong>Startup:</strong> {{ startup.name }} ({{ startup.industry }})</p>
+                        <p><strong>Investor:</strong> {{ investor.name }} (Focus: {{ investor.industry_focus }})</p>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No matches found.</p>
+        {% endif %}
+    </div>
+{% endblock %}
+
+
+

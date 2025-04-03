@@ -1,13 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta charset="UTF-8">
-    <title>Activity Logs</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Activity Logs - DIGIHUB{% endblock %}
+
+{% block content %}
     <h2>Admin Activity Logs</h2>
-    <table border="1">
+    <table class="table table-bordered">
         <tr>
             <th>Admin</th>
             <th>Action</th>
@@ -23,5 +20,8 @@
         </tr>
         {% endfor %}
     </table>
-</body>
-</html>
+{% endblock %}
+
+
+
+

@@ -1,13 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta charset="UTF-8">
-    <title>Mentor Dashboard</title>
-</head>
-<body>
-    <h2>Mentor Dashboard</h2>
-    <p>Welcome, Mentor!</p>
-    <a href="{{ url_for('logout') }}">Logout</a>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Mentor Dashboard - DIGIHUB{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2>Mentor Dashboard</h2>
+        <p>Welcome, {{ current_user.username }}!</p>
+
+        <a href="{{ url_for('routes.logout') }}" class="btn btn-danger">Logout</a>
+    </div>
+{% endblock %}
+
+
+

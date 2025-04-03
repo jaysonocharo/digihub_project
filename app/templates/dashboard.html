@@ -1,41 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta charset="UTF-8">
-    <title>Dashboard</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Dashboard - DIGIHUB{% endblock %}
+
+{% block content %}
     <h2>Welcome to Your Dashboard</h2>
+
     {% if current_user.is_authenticated %}
         <p>Hello, {{ current_user.username }}!</p>
         <p>Your role: {{ current_user.role }}</p>
         <p>You are logged in!</p>
-        <a href="{{ url_for('routes.logout') }}">Logout</a>
-        <a href="{{ url_for('routes.profile') }}">Edit Profile</a>
-        <a href="{{ url_for('routes.notifications') }}">View Notifications</a>
-        <a href="{{ url_for('routes.search') }}">Search Users</a>
+
+
+        <a href="{{ url_for('routes.logout') }}" class="btn btn-danger">Logout</a>
+        <a href="{{ url_for('routes.profile') }}" class="btn btn-primary">Edit Profile</a>
+        <a href="{{ url_for('routes.notifications') }}" class="btn btn-info">View Notifications</a>
+        <a href="{{ url_for('routes.search') }}" class="btn btn-success">Search Users</a>
+
         {% if current_user.role == 'admin' %}
-            <a href="{{ url_for('routes.admin_dashboard') }}">Admin Dashboard</a>
+            <a href="{{ url_for('routes.admin_dashboard') }}" class="btn btn-dark">Admin Dashboard</a>
         {% endif %}
+
         {% if current_user.role == 'investor' %}
-            <a href="{{ url_for('routes.matches') }}">Find Startup matches</a>
-            <a href="{{ url_for('routes.investor_startups') }}">Browse Startups</a>
-        {% endif %}
-        {% if current_user.role == 'startup' %}
-            <a href="{{ url_for('routes.mentorship') }}">Request Mentorship</a>
-        {% endif %}
-        {% if current_user.role == 'mentor' %}
-            <a href="{{ url_for('routes.mentor_sessions') }}">View Mentorship Sessions</a>
-        {% endif %}
-        {% if current_user.role == 'investor' %}
-            <a href="{{ url_for('routes.investor_form') }}">Complete Investor Profile</a>
+            <a href="{{ url_for('routes.matches') }}" class="btn btn-primary">Find Startup Matches</a>
+            <a href="{{ url_for('routes.investor_startups') }}" class="btn btn-info">Browse Startups</a>
+            <a href="{{ url_for('routes.investor_form') }}" class="btn btn-warning">Complete Investor Profile</a>
         {% elif current_user.role == 'startup' %}
-            <a href="{{ url_for('routes.startup_form') }}">Complete Startup Profile</a>
+            <a href="{{ url_for('routes.mentorship') }}" class="btn btn-secondary">Request Mentorship</a>
+            <a href="{{ url_for('routes.startup_form') }}" class="btn btn-warning">Complete Startup Profile</a>
+        {% elif current_user.role == 'mentor' %}
+            <a href="{{ url_for('routes.mentor_sessions') }}" class="btn btn-success">View Mentorship Sessions</a>
         {% endif %}
-
     {% endif %}
+{% endblock %}
 
 
-</body>
-</html>
+

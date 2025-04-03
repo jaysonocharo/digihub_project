@@ -1,62 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta charset="UTF-8">
-    <title>Mentor Sessions</title>
-</head>
-<body>
-    <h2>Mentorship Requests</h2>
+{% extends "base.html" %}
 
-    {% if sessions %}
-        <table border="1">
-            <tr>
-                <th>Startup Name</th>
-                <th>Date</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-            {% for session in sessions %}
-            <tr>
-                <td>{{ session.startup.username }}</td> <!-- Fetch startup name -->
-                <td>{{ session.date.strftime('%Y-%m-%d') }}</td>
-                <td>{{ session.status }}</td>
-                <td>
-                    {% if session.status == "Pending" %}
-                        <a href="{{ url_for('routes.approve_session', session_id=session.id) }}">Approve</a> |
-                        <a href="{{ url_for('routes.reject_session', session_id=session.id) }}">Reject</a>
-                    {% else %}
-                        No actions available
-                    {% endif %}
-                </td>
-            </tr>
+{% block title %}Investor-Startup Matches - DIGIHUB{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2>Investor-Startup Matches</h2>
+        
+        {% if matches %}
+            {% for startup, investor in matches %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <p><strong>Startup:</strong> {{ startup.name }} ({{ startup.industry }})</p>
+                        <p><strong>Investor:</strong> {{ investor.name }} (Focus: {{ investor.industry_focus }})</p>
+                    </div>
+                </div>
             {% endfor %}
-        </table>
-    {% else %}
-        <p>No mentorship requests available.</p>
-    {% endif %}
-
-</body>
-</html>
-
-
-
-
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta charset="UTF-8">
-    <title>Mentor Sessions</title>
-</head>
-<body>
-    <h2>Mentorship Requests</h2>
-    {% for session in sessions %}
-        <p>Startup ID: {{ session.startup_id }} | Date: {{ session.date }} | Status: {{ session.status }}</p>
-        {% if session.status == "Pending" %}
-            <a href="{{ url_for('routes.approve_session', session_id=session.id) }}">Approve</a> |
-            <a href="{{ url_for('routes.reject_session', session_id=session.id) }}">Reject</a>
+        {% else %}
+            <p>No matches found.</p>
         {% endif %}
-    {% endfor %}
-</body>
-</html> -->
+    </div>
+{% endblock %}
+
+
+
