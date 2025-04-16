@@ -23,10 +23,10 @@
         {% if current_user.role == 'investor' %}
             <a href="{{ url_for('routes.matches') }}" class="btn btn-primary">Find Startup Matches</a>
             <a href="{{ url_for('routes.investor_startups') }}" class="btn btn-info">Browse Startups</a>
-            <a href="{{ url_for('routes.investor_form') }}" class="btn btn-warning">Complete Investor Profile</a>
+            <a href="{{ url_for('routes.investor_form') }}" class="btn btn-warning">Your Investment Details</a>
         {% elif current_user.role == 'startup' %}
             <a href="{{ url_for('routes.mentorship') }}" class="btn btn-secondary">Request Mentorship</a>
-            <a href="{{ url_for('routes.startup_form') }}" class="btn btn-warning">Complete Startup Profile</a>
+            <a href="{{ url_for('routes.startup_form') }}" class="btn btn-warning">Your Startup Details</a>
         {% elif current_user.role == 'mentor' %}
             <a href="{{ url_for('routes.mentor_sessions') }}" class="btn btn-success">View Mentorship Sessions</a>
         {% endif %}

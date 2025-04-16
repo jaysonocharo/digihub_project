@@ -3,10 +3,6 @@
 {% block title %}Admin Dashboard - DIGIHUB{% endblock %}
 
 {% block content %}
-
-
-
-
 <div class="dashboard-container">
     <h2>Admin Management Dashboard</h2>
 
@@ -30,14 +26,19 @@
                     <td>{{ user.role }}</td>
                     <td>
                         <a href="{{ url_for('routes.activity_logs') }}" class="btn btn-info btn-sm">View Logs</a>
-                        {% if user.role == 'startup' and not user.approved %}
-                            <a href="{{ url_for('routes.approve_user', user_id=user.id) }}" class="btn btn-success btn-sm">Approve</a>
+                        {% if not user.approved %}
+                            {% if user.role == 'startup' or user.role == 'admin' %}
+                                <a href="{{ url_for('routes.approve_user', user_id=user.id) }}" class="btn btn-success btn-sm">
+                                    Approve {{ user.role.capitalize() }}
+                                </a>
+                            {% endif %}
                         {% else %}
                             <span class="text-success">Approved</span>
                         {% endif %}
                     </td>
                     <td>
                         {% if user.role != 'admin' %}
+                            <!-- Ban Button -->
                             <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#banUserModal{{ user.id }}">
                                 <i class="bi bi-x-circle"></i> Ban
                             </button>
@@ -60,6 +61,7 @@
                                 </div>
                             </div>
 
+                            <!-- Delete Button -->
                             <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteUserModal{{ user.id }}">
                                 <i class="bi bi-trash"></i> Delete
                             </button>
@@ -89,13 +91,12 @@
         </table>
     </div>
 
-    <!-- Chart Section (Only Bar Chart) -->
+    <!-- The container for the bar chart-->
     <div class="charts-container">
         <div class="chart-box">
             <canvas id="userChart"></canvas>
         </div>
     </div>
-
 </div>
 
 <!-- User Role Distribution Chart -->
@@ -117,19 +118,15 @@
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: { beginAtZero: true,
+                y: {
+                    beginAtZero: true,
                     ticks: {
-                    stepSize: 1,  
-                    precision: 0   
+                        stepSize: 1,
+                        precision: 0
+                    }
                 }
-                   }
             }
         }
     });
 </script>
-
 {% endblock %}
-
-
-
-

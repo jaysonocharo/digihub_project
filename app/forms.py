@@ -3,10 +3,10 @@ from wtforms import StringField, PasswordField, SubmitField, SelectField, TextAr
 from wtforms.validators import DataRequired, Length, Email, EqualTo
 from datetime import date
 from wtforms.validators import ValidationError, DataRequired, NumberRange
+from wtforms.fields import DateTimeLocalField
 
 
 
-#original reg. form
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=2, max=50)])
     email = StringField('Email', validators=[DataRequired(), Email()])
@@ -31,16 +31,9 @@ class EditProfileForm(FlaskForm):
     submit = SubmitField('Update Profile')
 
 
-# class MentorshipForm(FlaskForm):
-#     mentor_id = SelectField('Select Mentor', coerce=int, validators=[DataRequired()])
-#     date = DateField('Session Date', format='%Y-%m-%d', validators=[DataRequired()])
-#     submit = SubmitField('Request Mentorship')
-
-
-
 class MentorshipForm(FlaskForm):
     mentor_id = SelectField('Select Mentor', coerce=int, validators=[DataRequired()])
-    date = DateField('Session Date', format='%Y-%m-%d %H:%M', validators=[DataRequired()])
+    date = DateTimeLocalField('Session Date', format='%Y-%m-%dT%H:%M', validators=[DataRequired()])
     submit = SubmitField('Request Mentorship')
 
 
@@ -54,13 +47,14 @@ class SearchForm(FlaskForm):
     ])
     submit = SubmitField('Search')
 
-#for startup and investor fields
+
 class StartupForm(FlaskForm):
     company_name = StringField('Company Name', validators=[DataRequired()])
     industry = StringField('Industry', validators=[DataRequired()])
     funding_needed = IntegerField('Funding Needed (KES)', validators=[DataRequired()])
     description = TextAreaField('Description')
     submit = SubmitField('Save Startup Details')
+
 
 class InvestorForm(FlaskForm):
     investment_range_min = IntegerField('Minimum Investment (KES)', validators=[DataRequired()])

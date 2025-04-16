@@ -2,32 +2,26 @@ from app import db, login_manager
 from flask_login import UserMixin
 from datetime import datetime
 
-# User Loader function for Flask-Login
+
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return User.query.get(int(user_id))# The Flask-Login
 
-# User Model
+
+
 class User(db.Model, UserMixin):
-    #id = db.Column(db.Integer, primary_key=True)
-    #username = db.Column(db.String(50), unique=True, nullable=False)
-    #email = db.Column(db.String(120), unique=True, nullable=False)
-    #password = db.Column(db.String(60), nullable=False)
-    #role = db.Column(db.String(20), nullable=False, default='startup')  # 'startup', 'investor', 'mentor', 'admin'
-    
-
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='startup')
-    bio = db.Column(db.Text, nullable=True)  # About the user
-    company_name = db.Column(db.String(100), nullable=True)  # Only for startups
-    industry = db.Column(db.String(50), nullable=True)  # Industry sector
-    contact_info = db.Column(db.String(100), nullable=True)  # Contact details
-    linkedin_profile = db.Column(db.String(200), nullable=True)  # Optional LinkedIn link
+    bio = db.Column(db.Text, nullable=True)  
+    company_name = db.Column(db.String(100), nullable=True)  
+    industry = db.Column(db.String(50), nullable=True)  
+    contact_info = db.Column(db.String(100), nullable=True)  
+    linkedin_profile = db.Column(db.String(200), nullable=True)  
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
-    approved = db.Column(db.Boolean, default=False)  # New field to track approval status
+    approved = db.Column(db.Boolean, default=False)  
     #def __repr__(self):
      #   return f"User('{self.username}', '{self.email}', '{self.role}')"
 
@@ -59,21 +53,7 @@ class Investor(db.Model):
     investment_range_max = db.Column(db.Integer, nullable=False)
     industry_focus = db.Column(db.String(50), nullable=False)
     description = db.Column(db.Text, nullable=True)
-#Origninal Startup & Investor field
-# class Startup(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     name = db.Column(db.String(100), nullable=False)
-#     industry = db.Column(db.String(50), nullable=False)
-#     funding_stage = db.Column(db.String(50), nullable=False)  # Seed, Series A, etc.
-#     funding_needed = db.Column(db.Integer, nullable=False)  # Amount in KES
-#     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-# class Investor(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     name = db.Column(db.String(100), nullable=False)
-#     industry_focus = db.Column(db.String(50), nullable=False)
-#     investment_range_min = db.Column(db.Integer, nullable=False)
-#     investment_range_max = db.Column(db.Integer, nullable=False)
-#     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
 
 class MentorshipSession(db.Model):
     id = db.Column(db.Integer, primary_key=True)

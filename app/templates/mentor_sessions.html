@@ -1,25 +1,69 @@
 {% extends "base.html" %}
 
-{% block title %}Investor-Startup Matches - DIGIHUB{% endblock %}
+{% block title %}Mentorship Sessions - DIGIHUB{% endblock %}
 
 {% block content %}
-    <div class="container mt-4">
-        <h2>Investor-Startup Matches</h2>
-        
-        {% if matches %}
-            {% for startup, investor in matches %}
-                <div class="card mb-3">
+<div class="container mt-4">
+    <h2 class="text-center mb-4 text-primary">
+        <i class="bi bi-calendar-check-fill"></i> Mentorship Sessions
+    </h2>
+
+    {% if sessions %}
+        <div class="row">
+            {% for session in sessions %}
+            <div class="col-md-6">
+                <div class="card shadow-sm mb-4 border-0">
                     <div class="card-body">
-                        <p><strong>Startup:</strong> {{ startup.name }} ({{ startup.industry }})</p>
-                        <p><strong>Investor:</strong> {{ investor.name }} (Focus: {{ investor.industry_focus }})</p>
+                        <h5 class="card-title mb-2">
+                            <i class="bi bi-person-circle me-1"></i> {{ session.startup.username }}
+                        </h5>
+
+                        <p class="mb-1">
+                            <i class="bi bi-envelope-fill me-1"></i>
+                            <strong>Email:</strong> 
+                            <a href="mailto:{{ session.startup.email }}">{{ session.startup.email }}</a>
+                        </p>
+
+                        <p class="mb-1">
+                            <i class="bi bi-clock-history me-1"></i>
+                            <strong>Date:</strong> {{ session.date.strftime('%Y-%m-%d %H:%M') }}
+                        </p>
+
+                        <p class="mb-3">
+                            <i class="bi bi-info-circle me-1"></i>
+                            <strong>Status:</strong>
+                            {% if session.status == 'Approved' %}
+                                <span class="badge bg-success">{{ session.status }}</span>
+                            {% elif session.status == 'Rejected' %}
+                                <span class="badge bg-danger">{{ session.status }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ session.status }}</span>
+                            {% endif %}
+                        </p>
+
+                        {% if session.status == 'Pending' %}
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('routes.approve_session', session_id=session.id) }}" class="btn btn-outline-success btn-sm">
+                                <i class="bi bi-check-circle"></i> Approve
+                            </a>
+                            <a href="{{ url_for('routes.reject_session', session_id=session.id) }}" class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-x-circle"></i> Reject
+                            </a>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
+            </div>
             {% endfor %}
-        {% else %}
-            <p>No matches found.</p>
-        {% endif %}
-    </div>
+        </div>
+    {% else %}
+        <p class="text-muted text-center">No mentorship sessions found.</p>
+    {% endif %}
+</div>
 {% endblock %}
+
+
+
 
 
 

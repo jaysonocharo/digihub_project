@@ -1,6 +1,5 @@
 from flask import render_template, url_for, flash, redirect, request, abort, Blueprint, session
-#from app import app, db, bcrypt
-from app import db, bcrypt  # Import only what is needed
+from app import db, bcrypt
 from flask_login import login_user, logout_user, login_required, current_user
 
 
@@ -18,7 +17,6 @@ def home():
     return render_template("home.html")  
 
   
-#original
 @routes.route("/register", methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
@@ -32,33 +30,23 @@ def register():
     return render_template('register.html', form=form)
 
 
-
 @routes.route("/login", methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        print("✅ Form submitted successfully!")
-
         user = User.query.filter_by(email=form.email.data).first()
-        if user:
-            print(f"✅ User found: {user.username}, Role: {user.role}")
-        else:
-            print("❌ User not found in the database.")
 
         if user and bcrypt.check_password_hash(user.password, form.password.data):
+            
+            if user.role == 'admin' and not user.approved:
+                flash('Admin account not approved yet. Please wait for another admin to approve.', 'warning')
+                return redirect(url_for('routes.login'))
+
             login_user(user, remember=form.remember_me.data if hasattr(form, 'remember_me') else False)
             flash(f'Welcome back, {user.username}!', 'success')
-
-            print(f"🔄 Redirecting {user.username} to the dashboard...")
-
             return redirect(url_for('routes.dashboard'))
         else:
-            print("❌ Invalid login credentials!")
             flash('Login failed. Please check your email and password.', 'danger')
-
-    else:
-        print("❌ Form validation failed:", form.errors)
-
     return render_template('login.html', form=form)
 
 
@@ -78,7 +66,7 @@ def logout():
 @routes.route("/admin")
 @login_required
 @role_required('admin')
-def admin_home():  #changed from admin dashboard
+def admin_home():  
     return render_template('admin.html')
 
 @routes.route("/investor")
@@ -94,7 +82,6 @@ def mentor_dashboard():
     return render_template('mentor.html')
 
 
-#Editprofileroute
 @routes.route("/profile", methods=['GET', 'POST'])
 @login_required
 def profile():
@@ -169,7 +156,7 @@ def mentorship():
 @login_required
 def mentor_sessions():
     if current_user.role != 'mentor':
-        abort(403)  # Only mentors can access this page
+        abort(403)  
 
     sessions = MentorshipSession.query.filter_by(mentor_id=current_user.id).all()
     for session in sessions:
@@ -188,7 +175,6 @@ def approve_session(session_id):
     session.status = "Approved"
     db.session.commit()
 
-            # Send notification to startup
     send_notification(session.startup_id, f"Your mentorship session with {current_user.username} has been approved.")
 
     flash('Session approved!', 'success')
@@ -204,7 +190,6 @@ def reject_session(session_id):
     session.status = "Rejected"
     db.session.commit()
 
-    # Send notification to startup
     send_notification(session.startup_id, f"Your mentorship session with {current_user.username} has been rejected.")
 
     flash('Session rejected.', 'danger')
@@ -225,8 +210,6 @@ def send_notification(user_id, message):
 def notifications():
     user_notifications = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.timestamp.desc()).all()
     return render_template('notifications.html', notifications=user_notifications)
-
-
 
 
 @routes.route("/search", methods=['GET', 'POST'])
@@ -252,29 +235,6 @@ def search():
 
 
 
-# @routes.route("/admin_dashboard")
-# @login_required
-# def admin_dashboard():
-#     if current_user.role != 'admin':
-#         abort(403)
-
-#     startups = User.query.filter_by(role='startup').count()
-#     investors = User.query.filter_by(role='investor').count()
-#     mentors = User.query.filter_by(role='mentor').count()
-#     admins = User.query.filter_by(role='admin').count()
-
-#     # Get user signup trends
-#     users = User.query.all()
-#     signups_per_month = defaultdict(int)
-    
-#     for user in users:
-#         month = user.date_created.strftime('%Y-%m')  # Format: YYYY-MM
-#         signups_per_month[month] += 1
-    
-#     months = list(signups_per_month.keys())
-#     user_counts = list(signups_per_month.values())
-
-#     return render_template("admin_dashboard.html", startups=startups, investors=investors, mentors=mentors, admins=admins, months=months, user_counts=user_counts)
 
 @routes.route("/admin_dashboard")
 @login_required
@@ -323,7 +283,7 @@ def ban_user(user_id):
         abort(403)
 
     user = User.query.get_or_404(user_id)
-    user.approved = False  # Revoke approval instead of deleting user data
+    user.approved = False  
     db.session.commit()
 
     log_action(current_user.id, f"Banned user {user.username}", user.id)
@@ -363,18 +323,18 @@ def activity_logs():
     return render_template('activity_log.html', logs=logs)
 
 
-#route for investors to view startups
+
 @routes.route('/investor/startups')
 @login_required
 def investor_startups():
     if current_user.role != 'investor':
-        abort(403)  # Restrict access to only investors
+        abort(403)  
 
     startups = User.query.filter_by(role='startup', approved=True).all()
     return render_template('investor_startups.html', startups=startups)
 
 
-#route for viewing individual startups(seeing more detail about a startup)
+
 @routes.route('/startup/<int:startup_id>')
 @login_required
 def view_startup(startup_id):
@@ -395,7 +355,7 @@ def startups():
 @login_required
 def investor_form():
     if current_user.role != 'investor':
-        abort(403)  # Only investors can access this page
+        abort(403)  
 
     form = InvestorForm()
     if form.validate_on_submit():
@@ -416,7 +376,7 @@ def investor_form():
 @login_required
 def startup_form():
     if current_user.role != 'startup':
-        abort(403)  # Only startups can access this page
+        abort(403)  
 
     form = StartupForm()
     if form.validate_on_submit():

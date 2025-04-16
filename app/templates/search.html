@@ -24,16 +24,34 @@
 
     <h3 class="mt-4">Search Results</h3>
     {% if results %}
-        <ul class="list-group">
-            {% for user in results %}
-                <li class="list-group-item">{{ user.username }} - <strong>{{ user.role }}</strong></li>
-            {% endfor %}
-        </ul>
+    <div class="row">
+        {% for user in results %}
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-person"></i> {{ user.username }}</h5>
+                    <p class="card-text"><strong>Role:</strong> {{ user.role }}</p>
+                    <p class="card-text">
+                        <strong>Contact:</strong>
+                        <a href="mailto:{{ user.email }}">{{ user.email }}</a>
+                    </p>
+
+                    {% if user.role == 'startup' %}
+                    <a href="{{ url_for('routes.view_startup', startup_id=user.id) }}" class="btn btn-outline-primary btn-sm">
+                        View Profile
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
     {% else %}
         <p class="text-muted">No users found.</p>
     {% endif %}
 </div>
 {% endblock %}
+
 
 
 
