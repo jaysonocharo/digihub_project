@@ -114,11 +114,11 @@ th {
 }
 
 .navbar-brand, .nav-link {
-    color: black !important; /* text */
+    color: black !important; 
 }
 
 .navbar-toggler-icon {
-    filter: invert(1); /* Makes toggler icon visible in dark backgrounds */
+    filter: invert(1); 
 }
 
 

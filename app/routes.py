@@ -123,13 +123,13 @@ def matches():
 @login_required
 def mentorship():
     if current_user.role != 'startup':
-        abort(403)  # Only startups can request mentorship
+        abort(403)  
 
     form = MentorshipForm()
     form.mentor_id.choices = [(m.id, m.username) for m in User.query.filter_by(role='mentor').all()]
 
     if form.validate_on_submit():
-        print(f"✅ Form validated: Mentor ID={form.mentor_id.data}, Date={form.date.data}")
+        print(f" Form validated: Mentor ID={form.mentor_id.data}, Date={form.date.data}")
 
         session = MentorshipSession(
             mentor_id=form.mentor_id.data,
@@ -140,13 +140,13 @@ def mentorship():
         db.session.add(session)
         db.session.commit()
 
-        print("✅ Session added to database!")
+        print(" Session added to database!")
 
         flash('Mentorship session requested!', 'success')
         return redirect(url_for('routes.mentorship'))
 
     else:
-        print("❌ Form validation failed. Errors:", form.errors)
+        print(" Form validation failed. Errors:", form.errors)
 
     sessions = MentorshipSession.query.filter_by(startup_id=current_user.id).all()
     return render_template('mentorship.html', form=form, sessions=sessions)

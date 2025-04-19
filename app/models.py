@@ -22,8 +22,7 @@ class User(db.Model, UserMixin):
     linkedin_profile = db.Column(db.String(200), nullable=True)  
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
     approved = db.Column(db.Boolean, default=False)  
-    #def __repr__(self):
-     #   return f"User('{self.username}', '{self.email}', '{self.role}')"
+
 
     def is_admin(self):
         return self.role == 'admin'

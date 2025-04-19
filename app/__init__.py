@@ -16,7 +16,7 @@ def create_app():
     app = Flask(__name__)
 
     app.config['SECRET_KEY'] = 'fjalfjdas flskjfksalk'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///digihub.db'  # Change for PostgreSQL if needed
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///digihub.db'  
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
  
     app.config['SESSION_PERMANENT'] = False
@@ -28,7 +28,7 @@ def create_app():
     login_manager.init_app(app)
     Session(app)
 
-    # The Blueprint
+    
     from app.routes import routes
     app.register_blueprint(routes)
 
