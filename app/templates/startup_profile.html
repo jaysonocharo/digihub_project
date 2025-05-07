@@ -2,19 +2,110 @@
 
 {% block content %}
 <div class="container mt-5">
-    <div class="card">
+    <div class="card shadow-lg">
         <div class="row g-0">
-            <div class="col-md-4">
-                <img src="{{ startup.profile_image or 'https://via.placeholder.com/300x200' }}" class="img-fluid rounded-start" alt="Startup Image">
+            <!-- Left Column: Logo + Founder -->
+            <div class="col-md-4 bg-light text-center p-4">
+                <!-- Startup Logo -->
+                {% if startup.logo %}
+                    <img src="{{ url_for('static', filename=startup.logo.replace('\\', '/')) }}" 
+                         class="img-fluid rounded mb-3" 
+                         style="max-height: 150px;" 
+                         alt="{{ startup.company_name }} logo">
+                {% else %}
+                    <img src="https://via.placeholder.com/150x100" 
+                         class="img-fluid rounded mb-3" 
+                         alt="Default logo">
+                {% endif %}
+
+                <!-- Founder Profile -->
+                <!-- {% if startup.user and startup.user.profile_image %}
+                    <img src="{{ url_for('static', filename=startup.user.profile_image.replace('\\', '/')) }}" 
+                         class="img-thumbnail rounded-circle mb-2" 
+                         style="max-width: 120px;" 
+                         alt="{{ startup.user.username }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/120" 
+                         class="img-thumbnail rounded-circle mb-2" 
+                         alt="Default profile image">
+                {% endif %}
+                <h5 class="mt-2">{{ startup.user.username }}</h5> -->
+                <p class="text-muted">{{ startup.user.bio }}</p>
+
+                <a href="mailto:{{ startup.user.email }}" class="btn btn-success btn-sm mb-2">Contact Founder</a><br>
+                {% if startup.user.linkedin_profile %}
+                    <a href="{{ startup.user.linkedin_profile }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                        LinkedIn
+                    </a>
+                {% endif %}
             </div>
-            <div class="col-md-8">
-                <div class="card-body">
-                    <h2 class="card-title">{{ startup.username }}</h2>
-                    <p class="card-text"><strong>Industry:</strong> {{ startup.industry }}</p>
-                    <p class="card-text"><strong>Bio:</strong> {{ startup.bio }}</p>
-                    <p class="card-text"><strong>Website:</strong> <a href="{{ startup.website }}" target="_blank">{{ startup.website }}</a></p>
-                    <a href="mailto:{{ startup.email }}" class="btn btn-success">Contact Startup</a>
-                </div>
+
+            <!-- Right Column: Startup Info -->
+            <div class="col-md-8 p-4">
+                <h2 class="card-title">{{ startup.company_name }}</h2>
+                <p><strong>Industry:</strong> {{ startup.industry }}</p>
+                <p><strong>Location:</strong> {{ startup.location }}</p>
+                <p><strong>Website:</strong> 
+                    <a href="{{ startup.website }}" target="_blank">{{ startup.website }}</a>
+                </p>
+                {% if startup.social_links %}
+                    <p><strong>Social Links:</strong> {{ startup.social_links }}</p>
+                {% endif %}
+
+                <hr>
+
+                <h5>📈 Business Metrics</h5>
+                <ul class="list-unstyled">
+                    <li><strong>Team Size:</strong> {{ startup.team_size }}</li>
+                    <li><strong>Revenue:</strong> ${{ startup.revenue }}</li>
+                    <li><strong>MRR:</strong> ${{ startup.mrr }}</li>
+                    <li><strong>User Growth:</strong> {{ startup.user_growth }}%</li>
+                    {% if startup.partnerships %}
+                        <li><strong>Partnerships:</strong> {{ startup.partnerships }}</li>
+                    {% endif %}
+                </ul>
+
+                <h5>💰 Fundraising</h5>
+                <ul class="list-unstyled">
+                    <li><strong>Stage:</strong> {{ startup.stage }}</li>
+                    <li><strong>Funding Needed:</strong> ${{ startup.funding_needed }}</li>
+                    <li><strong>Valuation:</strong> ${{ startup.valuation }}</li>
+                    {% if startup.previous_funding %}
+                        <li><strong>Previous Funding:</strong> {{ startup.previous_funding }}</li>
+                    {% endif %}
+                </ul>
+
+                <h5>🔧 Tech & IP</h5>
+                <ul class="list-unstyled">
+                    <li><strong>Tech Stack:</strong> {{ startup.tech_stack }}</li>
+                    <li><strong>IP Rights:</strong> {{ startup.ip_rights }}</li>
+                    <li><strong>Competitive Advantage:</strong> {{ startup.competitive_advantage }}</li>
+                </ul>
+
+                <h5>🌍 Market Insights</h5>
+                <ul class="list-unstyled">
+                    <li><strong>TAM:</strong> ${{ startup.tam }}</li>
+                    <li><strong>SAM:</strong> ${{ startup.sam }}</li>
+                    <li><strong>Competition:</strong> {{ startup.competition }}</li>
+                </ul>
+
+                <hr>
+
+                {% if startup.pitch_deck %}
+                    <p><strong>Pitch Deck:</strong> 
+                        <a href="{{ url_for('static', filename=startup.pitch_deck.replace('\\', '/')) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                            Download Pitch Deck
+                        </a>
+                    </p>
+                {% endif %}
+
+                {% if startup.demo_video %}
+                    <p><strong>Demo Video:</strong></p>
+                    <video width="100%" height="auto" controls>
+                        <source src="{{ url_for('static', filename=startup.demo_video.replace('\\', '/')) }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                {% endif %}
             </div>
         </div>
     </div>

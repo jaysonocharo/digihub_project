@@ -1,15 +1,82 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}Investor Details - Digihub{% endblock %}
+{% block title %}Investor Profile - DIGIHUB{% endblock %}
 
 {% block content %}
-    <h2>Investor Profile</h2>
-    <form method="POST">
-        {{ form.hidden_tag() }}
-        <p>{{ form.investment_range_min.label }} {{ form.investment_range_min() }}</p>
-        <p>{{ form.investment_range_max.label }} {{ form.investment_range_max() }}</p>
-        <p>{{ form.industry_focus.label }} {{ form.industry_focus() }}</p>
-        <p>{{ form.description.label }} {{ form.description() }}</p>
-        <p>{{ form.submit() }}</p>
-    </form>
+<h2>Investor Profile</h2>
+
+<form method="POST" enctype="multipart/form-data" class="mt-4">
+    {{ form.hidden_tag() }}
+
+    <div class="accordion" id="investorAccordion">
+
+        <!-- Section 1: Basic Info -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingBasic">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBasic">
+                    Basic Information
+                </button>
+            </h2>
+            <div id="collapseBasic" class="accordion-collapse collapse show" data-bs-parent="#investorAccordion">
+                <div class="accordion-body">
+                    <div class="mb-3">{{ form.firm_name.label }} {{ form.firm_name(class="form-control") }}</div>
+                    <div class="mb-3">{{ form.location.label }} {{ form.location(class="form-control") }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Investment Criteria -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingInvestment">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInvestment">
+                    Investment Criteria
+                </button>
+            </h2>
+            <div id="collapseInvestment" class="accordion-collapse collapse" data-bs-parent="#investorAccordion">
+                <div class="accordion-body">
+                    <div class="mb-3">{{ form.check_size_min.label }} {{ form.check_size_min(class="form-control", type="number", step="any") }}</div>
+                    <div class="mb-3">{{ form.check_size_max.label }} {{ form.check_size_max(class="form-control", type="number", step="any") }}</div>
+                    <div class="mb-3">{{ form.industry_focus.label }} {{ form.industry_focus(class="form-control") }}</div>
+                    <div class="mb-3">{{ form.stage_focus.label }} {{ form.stage_focus(class="form-select") }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Preferences -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingPreferences">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePreferences">
+                    Deal & Engagement Preferences
+                </button>
+            </h2>
+            <div id="collapsePreferences" class="accordion-collapse collapse" data-bs-parent="#investorAccordion">
+                <div class="accordion-body">
+                    <div class="mb-3">{{ form.deal_preferences.label }} {{ form.deal_preferences(class="form-select") }}</div>
+                    <div class="mb-3">{{ form.engagement_style.label }} {{ form.engagement_style(class="form-select") }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4: Narrative & Track Record -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingTrack">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTrack">
+                    Investment Thesis & Track Record
+                </button>
+            </h2>
+            <div id="collapseTrack" class="accordion-collapse collapse" data-bs-parent="#investorAccordion">
+                <div class="accordion-body">
+                    <div class="mb-3">{{ form.portfolio.label }} {{ form.portfolio(class="form-control", rows="3") }}</div>
+                    <div class="mb-3">{{ form.investment_thesis.label }} {{ form.investment_thesis(class="form-control", rows="3") }}</div>
+                    <div class="mb-3">{{ form.past_exits.label }} {{ form.past_exits(class="form-control", rows="3") }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        {{ form.submit(class="btn btn-primary") }}
+    </div>
+</form>
 {% endblock %}
+

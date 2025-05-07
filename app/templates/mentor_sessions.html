@@ -5,48 +5,48 @@
 {% block content %}
 <div class="container mt-4">
     <h2 class="text-center mb-4 text-primary">
-        <i class="bi bi-calendar-check-fill"></i> Mentorship Sessions
+        <i class="bi bi-calendar-check-fill"></i> Mentorship Requests
     </h2>
 
-    {% if sessions %}
+    {% if requests %}
         <div class="row">
-            {% for session in sessions %}
+            {% for req in requests %}
             <div class="col-md-6">
                 <div class="card shadow-sm mb-4 border-0">
                     <div class="card-body">
                         <h5 class="card-title mb-2">
-                            <i class="bi bi-person-circle me-1"></i> {{ session.startup.username }}
+                            <i class="bi bi-person-circle me-1"></i> {{ req.startup.user.username }}
                         </h5>
 
                         <p class="mb-1">
                             <i class="bi bi-envelope-fill me-1"></i>
                             <strong>Email:</strong> 
-                            <a href="mailto:{{ session.startup.email }}">{{ session.startup.email }}</a>
+                            <a href="mailto:{{ req.startup.user.email }}">{{ req.startup.user.email }}</a>
                         </p>
 
                         <p class="mb-1">
                             <i class="bi bi-clock-history me-1"></i>
-                            <strong>Date:</strong> {{ session.date.strftime('%Y-%m-%d %H:%M') }}
+                            <strong>Date:</strong> {{ req.request_date }} at {{ req.request_time.strftime('%H:%M') }}
                         </p>
 
                         <p class="mb-3">
                             <i class="bi bi-info-circle me-1"></i>
                             <strong>Status:</strong>
-                            {% if session.status == 'Approved' %}
-                                <span class="badge bg-success">{{ session.status }}</span>
-                            {% elif session.status == 'Rejected' %}
-                                <span class="badge bg-danger">{{ session.status }}</span>
+                            {% if req.status == 'Accepted' %}
+                                <span class="badge bg-success">{{ req.status }}</span>
+                            {% elif req.status == 'Rejected' %}
+                                <span class="badge bg-danger">{{ req.status }}</span>
                             {% else %}
-                                <span class="badge bg-secondary">{{ session.status }}</span>
+                                <span class="badge bg-secondary">{{ req.status }}</span>
                             {% endif %}
                         </p>
 
-                        {% if session.status == 'Pending' %}
+                        {% if req.status == 'Pending' %}
                         <div class="d-flex gap-2">
-                            <a href="{{ url_for('routes.approve_session', session_id=session.id) }}" class="btn btn-outline-success btn-sm">
-                                <i class="bi bi-check-circle"></i> Approve
+                            <a href="{{ url_for('routes.update_request', request_id=req.id, action='accept') }}" class="btn btn-outline-success btn-sm">
+                                <i class="bi bi-check-circle"></i> Accept
                             </a>
-                            <a href="{{ url_for('routes.reject_session', session_id=session.id) }}" class="btn btn-outline-danger btn-sm">
+                            <a href="{{ url_for('routes.update_request', request_id=req.id, action='reject') }}" class="btn btn-outline-danger btn-sm">
                                 <i class="bi bi-x-circle"></i> Reject
                             </a>
                         </div>
@@ -57,13 +57,7 @@
             {% endfor %}
         </div>
     {% else %}
-        <p class="text-muted text-center">No mentorship sessions found.</p>
+        <p class="text-muted text-center">No mentorship requests found.</p>
     {% endif %}
 </div>
 {% endblock %}
-
-
-
-
-
-

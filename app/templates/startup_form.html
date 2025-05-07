@@ -1,15 +1,206 @@
 {% extends 'base.html' %}
 
-{% block title %}Startup Details - Digihub{% endblock %}
+{% block title %}Startup Profile - DIGIHUB{% endblock %}
 
 {% block content %}
-    <h2>Startup Profile</h2>
-    <form method="POST">
+<div class="container mt-4">
+    <h2 class="mb-4">Startup Profile</h2>
+
+    <form method="POST" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
-        <p>{{ form.company_name.label }} {{ form.company_name() }}</p>
-        <p>{{ form.industry.label }} {{ form.industry() }}</p>
-        <p>{{ form.funding_needed.label }} {{ form.funding_needed() }}</p>
-        <p>{{ form.description.label }} {{ form.description() }}</p>
-        <p>{{ form.submit() }}</p>
+
+        <div class="accordion" id="startupAccordion">
+
+            <!-- Basic Info -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingBasic">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBasic">
+                        Basic Information
+                    </button>
+                </h2>
+                <div id="collapseBasic" class="accordion-collapse collapse show" data-bs-parent="#startupAccordion">
+                    <div class="accordion-body">
+                        {{ form.company_name.label }} {{ form.company_name(class="form-control") }}
+                        {{ form.logo.label }} {{ form.logo(class="form-control") }}
+                        {% if startup and startup.logo %}
+                            <div class="mt-2">
+                                <label><strong>Uploaded Logo:</strong></label><br>
+                                <img src="{{ url_for('static', filename=startup.logo.replace('\\', '/')) }}"
+                                    class="img-thumbnail"
+                                    style="max-width: 200px;"
+                                    alt="{{ startup.company_name }} logo"
+                                    title="{{ startup.company_name }} logo">
+                                <div class="form-check">
+                                    {{ form.clear_logo(class="form-check-input") }}
+                                    <label class="form-check-label">Clear Logo</label>
+                                </div>
+                            </div>
+                        {% endif %}
+                        {{ form.industry.label }} {{ form.industry(class="form-control") }}
+                        {{ form.location.label }} {{ form.location(class="form-control") }}
+                        {{ form.founding_date.label }} {{ form.founding_date(class="form-control") }}
+                        {{ form.team_size.label }} {{ form.team_size(class="form-control", type="number") }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financials -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingFinancials">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFinancials">
+                        Financials & Funding
+                    </button>
+                </h2>
+                <div id="collapseFinancials" class="accordion-collapse collapse" data-bs-parent="#startupAccordion">
+                    <div class="accordion-body">
+                        {{ form.revenue_streams.label }} {{ form.revenue_streams(class="form-control") }}
+                        {{ form.pricing_strategy.label }} {{ form.pricing_strategy(class="form-control") }}
+                        {{ form.customer_acquisition_cost.label }} {{ form.customer_acquisition_cost(class="form-control", type="number", step="any") }}
+                        {{ form.stage.label }} {{ form.stage(class="form-select") }}
+                        {{ form.funding_needed.label }} {{ form.funding_needed(class="form-control", type="number", step="any") }}
+                        {{ form.valuation.label }} {{ form.valuation(class="form-control", type="number", step="any") }}
+                        {{ form.previous_funding.label }} {{ form.previous_funding(class="form-control") }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Traction -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingTraction">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTraction">
+                        Traction
+                    </button>
+                </h2>
+                <div id="collapseTraction" class="accordion-collapse collapse" data-bs-parent="#startupAccordion">
+                    <div class="accordion-body">
+                        {{ form.revenue.label }} {{ form.revenue(class="form-control", type="number", step="any") }}
+                        {{ form.mrr.label }} {{ form.mrr(class="form-control", type="number", step="any") }}
+                        {{ form.user_growth.label }} {{ form.user_growth(class="form-control", type="number", step="any") }}
+                        {{ form.partnerships.label }} {{ form.partnerships(class="form-control") }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technology -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingTech">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTech">
+                        Technology & IP
+                    </button>
+                </h2>
+                <div id="collapseTech" class="accordion-collapse collapse" data-bs-parent="#startupAccordion">
+                    <div class="accordion-body">
+                        {{ form.tech_stack.label }} {{ form.tech_stack(class="form-control") }}
+                        {{ form.ip_rights.label }} {{ form.ip_rights(class="form-control") }}
+                        {{ form.competitive_advantage.label }} {{ form.competitive_advantage(class="form-control") }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Market -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingMarket">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMarket">
+                        Market & Competition
+                    </button>
+                </h2>
+                <div id="collapseMarket" class="accordion-collapse collapse" data-bs-parent="#startupAccordion">
+                    <div class="accordion-body">
+                        {{ form.tam.label }} {{ form.tam(class="form-control", type="number", step="any") }}
+                        {{ form.sam.label }} {{ form.sam(class="form-control", type="number", step="any") }}
+                        {{ form.competition.label }} {{ form.competition(class="form-control") }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Media -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingMedia">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMedia">
+                        Media & Online Presence
+                    </button>
+                </h2>
+                <div id="collapseMedia" class="accordion-collapse collapse" data-bs-parent="#startupAccordion">
+                    <div class="accordion-body">
+                        {{ form.pitch_deck.label }} {{ form.pitch_deck(class="form-control") }}
+                        {% if startup and startup.pitch_deck %}
+                            <div class="mt-2">
+                                <a href="{{ url_for('static', filename=startup.pitch_deck.replace('\\', '/')) }}" class="btn btn-outline-primary btn-sm" target="_blank">View Pitch Deck</a>
+                                <div class="form-check">
+                                    {{ form.clear_pitch_deck(class="form-check-input") }}
+                                    <label class="form-check-label">Clear Pitch Deck</label>
+                                </div>
+                            </div>
+                        {% endif %}
+                    
+
+                        <div class="mb-3">
+                            {{ form.demo_video.label }}
+                            {{ form.demo_video(class="form-control", onchange="previewDemoVideo(event)") }}
+                            <video id="demoVideoPreview" class="mt-2" width="320" height="240" style="display:none;" controls></video>
+                        </div>
+                        {% if startup and startup.demo_video %}
+                            <video class="mt-2" width="320" height="240" controls>
+                                <source src="{{ url_for('static', filename=startup.demo_video.replace('\\', '/')) }}" type="video/mp4">
+                            </video>
+                            <div class="form-check">
+                                {{ form.clear_demo_video(class="form-check-input") }}
+                                <label class="form-check-label">Clear Demo Video</label>
+                            </div>
+                        {% endif %}
+
+                                                
+                        {{ form.website.label }} {{ form.website(class="form-control") }}
+                        {{ form.social_links.label }} {{ form.social_links(class="form-control") }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Optional: Description -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingDesc">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDesc">
+                        Summary Description
+                    </button>
+                </h2>
+                <div id="collapseDesc" class="accordion-collapse collapse" data-bs-parent="#startupAccordion">
+                    <div class="accordion-body">
+                        {{ form.description.label }} {{ form.description(class="form-control") }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            {{ form.submit(class="btn btn-success") }}
+        </div>
     </form>
+</div>
+
+<!-- JS to restrict number inputs -->
+<script>
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('keypress', function (e) {
+            if (e.key.match(/[^0-9.]/)) e.preventDefault();
+        });
+    });
+</script>
+
+<!-- Previewing a video-->
+<script>
+    function previewDemoVideo(event) {
+        const [file] = event.target.files;
+        const preview = document.getElementById('demoVideoPreview');
+    
+        if (file && file.type.startsWith('video/')) {
+            preview.src = URL.createObjectURL(file);
+            preview.style.display = 'block';
+        } else {
+            preview.style.display = 'none';
+            preview.src = '';
+        }
+    }
+    </script>
+    
 {% endblock %}
+

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h2>Recommended Mentors</h2>
+    {% if matches %}
+        <ul class="list-group">
+        {% for mentor, score in matches %}
+            <li class="list-group-item">
+                <strong>{{ mentor.user.username }}</strong> —
+                {{ mentor.industry_focus or 'No industry specified' }} <br>
+                <span class="text-muted">Match Score: {{ score }}%</span><br>
+                <a href="{{ url_for('routes.mentor_profile', mentor_id=mentor.id) }}" class="btn btn-sm btn-info mt-2">
+                    View Profile
+                </a>
+            </li>
+        {% endfor %}        
+        </ul>
+    {% else %}
+        <p>No suitable mentors found at this time.</p>
+    {% endif %}
+</div>
+{% endblock %}

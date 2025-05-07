@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h2>{{ mentor.user.username }}'s Profile</h2>
+    <p><strong>Expertise:</strong> {{ mentor.expertise }}</p>
+    <p><strong>Years of Experience:</strong> {{ mentor.years_experience }}</p>
+    <p><strong>Industry Focus:</strong> {{ mentor.industry_focus }}</p>
+    <p><strong>Mentorship Topics:</strong> {{ mentor.mentorship_topics }}</p>
+    <p><strong>Availability:</strong> {{ mentor.availability }}</p>
+
+    {% if current_user.role == 'startup' %}
+        <a href="{{ url_for('routes.request_mentorship', mentor_id=mentor.id) }}" class="btn btn-primary">Request Mentorship</a>
+    {% endif %}
+</div>
+{% endblock %}

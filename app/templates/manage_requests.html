@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h2>Mentorship Requests</h2>
+    {% if requests %}
+        <ul class="list-group">
+        {% for req in requests %}
+            <li class="list-group-item">
+                <strong>{{ req.startup.user.username }}</strong> requested mentorship on {{ req.request_date }} at {{ req.request_time }}.
+                <span class="badge bg-info">{{ req.status }}</span>
+                {% if req.status == 'Pending' %}
+                    <a href="{{ url_for('update_request', request_id=req.id, action='accept') }}" class="btn btn-success btn-sm">Accept</a>
+                    <a href="{{ url_for('update_request', request_id=req.id, action='reject') }}" class="btn btn-danger btn-sm">Reject</a>
+                {% endif %}
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No mentorship requests.</p>
+    {% endif %}
+</div>
+{% endblock %}

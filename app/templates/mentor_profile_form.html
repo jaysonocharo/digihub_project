@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h2>Edit Mentor Profile</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="mb-3">
+            {{ form.expertise.label }} {{ form.expertise(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.years_experience.label }} {{ form.years_experience(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.industry_focus.label }} {{ form.industry_focus(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.mentorship_topics.label }} {{ form.mentorship_topics(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.availability.label }} {{ form.availability(class="form-control") }}
+        </div>
+
+        <button type="submit" class="btn btn-success">Save Profile</button>
+    </form>
+</div>
+{% endblock %}

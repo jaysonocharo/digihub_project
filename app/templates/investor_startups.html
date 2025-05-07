@@ -2,22 +2,61 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="text-center">Explore Startups</h2>
-    <p class="text-center">Discover innovative startups to invest in.</p>
+    <h2 class="text-center mb-3">Explore Startups</h2>
+    <p class="text-center text-muted mb-4">Discover innovative startups to invest in.</p>
 
-    <div class="row">
-        {% for startup in startups %}
+    <!-- 🔍 Filter Form -->
+
+    <form method="get" action="{{ url_for('routes.investor_startups') }}" class="row mb-4">
         <div class="col-md-4">
-            <div class="card mb-4">
-                <img src="{{ startup.profile_image or 'https://via.placeholder.com/300x200' }}" class="card-img-top" alt="Startup Image">
-                <div class="card-body">
-                    <h5 class="card-title">{{ startup.username }}</h5>
-                    <p class="card-text">{{ startup.bio[:100] }}...</p>
-                    <a href="{{ url_for('routes.view_startup', startup_id=startup.id) }}" class="btn btn-primary">View Profile</a>
+            <label for="industry" class="form-label visually-hidden">Industry</label>
+            <select id="industry" name="industry" class="form-select" onchange="this.form.submit()" aria-label="Filter by Industry">
+                <option value="All">All Industries</option>
+                {% for industry in industries %}
+                    <option value="{{ industry }}" {% if selected_industry == industry %}selected{% endif %}>{{ industry }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="stage" class="form-label visually-hidden">Funding Stage</label>
+            <select id="stage" name="stage" class="form-select" onchange="this.form.submit()" aria-label="Filter by Stage">
+                <option value="All">All Stages</option>
+                {% for stage in stages %}
+                    <option value="{{ stage }}" {% if selected_stage == stage %}selected{% endif %}>{{ stage }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="location" class="form-label visually-hidden">Location</label>
+            <select id="location" name="location" class="form-select" onchange="this.form.submit()" aria-label="Filter by Location">
+                <option value="All">All Locations</option>
+                {% for location in locations %}
+                    <option value="{{ location }}" {% if selected_location == location %}selected{% endif %}>{{ location }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+
+
+    <div class="row g-4">
+        {% for user, startup in startups %}
+        <div class="col-sm-6 col-md-4">
+            <div class="card h-100 shadow-sm">
+                {% set logo_path = startup.logo.replace('\\', '/') if startup.logo else None %}
+                <img src="{{ url_for('static', filename=logo_path) if logo_path else 'https://via.placeholder.com/400x250?text=Startup+Logo' }}"
+                     class="card-img-top"
+                     alt="{{ startup.company_name }} Logo"
+                     style="max-height: 250px; object-fit: cover;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title mb-1">{{ startup.company_name }}</h5>
+                    <p class="text-muted mb-2"><strong>Industry:</strong> {{ startup.industry or "Not specified" }}</p>
+                    <p class="card-text mb-3">{{ user.bio[:100] if user.bio else 'No bio available.' }}...</p>
+                    <a href="{{ url_for('routes.view_startup', startup_id=user.id) }}" class="btn btn-outline-primary mt-auto">View Profile</a>
                 </div>
             </div>
         </div>
         {% endfor %}
     </div>
 </div>
+
 {% endblock %}

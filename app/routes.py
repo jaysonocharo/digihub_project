@@ -3,13 +3,20 @@ from app import db, bcrypt
 from flask_login import login_user, logout_user, login_required, current_user
 
 
+from app.models import Startup, Investor
+from app.utils import save_file
+
 routes = Blueprint("routes", __name__)
 
 
-from app.forms import RegistrationForm, LoginForm, MentorshipForm, SearchForm, EditProfileForm, InvestorForm, StartupForm
+from app.forms import RegistrationForm, LoginForm, MentorshipForm, SearchForm, EditProfileForm, InvestorForm, StartupForm, MentorForm
 from datetime import datetime
-from app.models import User, MentorshipSession, ActivityLog, Startup, Investor
+from app.models import User, MentorshipSession, ActivityLog, Startup, Investor, db, MentorshipRequest, Mentor
 from app.decorators import role_required
+from app.matching import match_startups_to_investors
+from app.utils import save_file, delete_file_if_exists
+
+
 from collections import defaultdict
 
 @routes.route("/")
@@ -21,13 +28,31 @@ def home():
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
+        # Check for duplicate email
+        existing_user = User.query.filter_by(email=form.email.data).first()
+        if existing_user:
+            flash(' That email is already registered. Try logging in or resetting your password.', 'danger')
+            return redirect(url_for('routes.register'))
+
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = User(username=form.username.data, email=form.email.data, password=hashed_password,role=form.role.data)
+
+        # First admin gets auto-approved
+        is_first_admin = form.role.data == 'admin' and not User.query.filter_by(role='admin').first()
+        user = User(
+            username=form.username.data,
+            email=form.email.data,
+            password=hashed_password,
+            role=form.role.data,
+            approved=(True if is_first_admin or form.role.data != 'admin' else False)
+        )
+
         db.session.add(user)
         db.session.commit()
-        flash(f'Account created for {form.username.data}!', 'success')
+        flash(f' Account created for {form.username.data}!', 'success')
         return redirect(url_for('routes.login'))
+
     return render_template('register.html', form=form)
+
 
 
 @routes.route("/login", methods=['GET', 'POST'])
@@ -53,7 +78,29 @@ def login():
 @routes.route("/dashboard")
 @login_required
 def dashboard():
-    return render_template('dashboard.html', user=current_user)
+    startup_info = None
+    mentorship_requests = []
+
+    if current_user.role == 'startup':
+        startup = Startup.query.filter_by(user_id=current_user.id).first()
+        if startup:
+            startup_info = {
+                "logo": url_for('static', filename=startup.logo.replace('\\', '/')) if startup.logo else None,
+                "company_name": startup.company_name,
+                "industry": startup.industry,
+                "profile_link": url_for('routes.view_startup', startup_id=startup.id)
+            }
+            # Fetch mentorship requests made by this startup
+            mentorship_requests = MentorshipRequest.query.filter_by(startup_id=startup.id).all()
+
+    return render_template(
+        'dashboard.html',
+        user=current_user,
+        startup_info=startup_info,
+        mentorship_requests=mentorship_requests
+    )
+
+
 
 
 @routes.route("/logout")
@@ -86,36 +133,62 @@ def mentor_dashboard():
 @login_required
 def profile():
     form = EditProfileForm()
+
+    startup = None
+    if current_user.role == 'startup':
+        startup = Startup.query.filter_by(user_id=current_user.id).first()
+
     if form.validate_on_submit():
         current_user.username = form.username.data
         current_user.bio = form.bio.data
-        current_user.company_name = form.company_name.data if current_user.role == 'startup' else None
-        current_user.industry = form.industry.data
         current_user.contact_info = form.contact_info.data
         current_user.linkedin_profile = form.linkedin_profile.data
-        db.session.commit()
+
+        if startup:
+            startup.company_name = form.company_name.data
+            startup.industry = form.industry.data
+            db.session.commit()
+        else:
+            db.session.commit()
+
         flash('Your profile has been updated!', 'success')
         return redirect(url_for('routes.profile'))
-    
+
+    # Pre-fill form with existing data
     form.username.data = current_user.username
     form.bio.data = current_user.bio
-    form.company_name.data = current_user.company_name
-    form.industry.data = current_user.industry
     form.contact_info.data = current_user.contact_info
     form.linkedin_profile.data = current_user.linkedin_profile
-    
+    if startup:
+        form.company_name.data = startup.company_name
+        form.industry.data = startup.industry
+
     return render_template('profile.html', form=form)
 
-from app.matching import match_startups_to_investors
 
 @routes.route("/matches")
 @login_required
 def matches():
-    if current_user.role != 'investor' and current_user.role != 'startup':
+    if current_user.role not in ['startup', 'investor']:
         abort(403)
 
     matched_pairs = match_startups_to_investors()
-    return render_template('matches.html', matches=matched_pairs)
+    user_matches = []
+
+    for match in matched_pairs:
+        startup = match['startup']
+        investor = match['investor']
+        score = match['score']
+        reasons = match.get('reasons', [])  # optional reasons from AI logic
+
+        # Filter to only strong matches
+        if score >= 70:
+            if current_user.role == 'startup' and startup.user_id == current_user.id:
+                user_matches.append((startup, investor, score, reasons))
+            elif current_user.role == 'investor' and investor.user_id == current_user.id:
+                user_matches.append((startup, investor, score, reasons))
+
+    return render_template('matches.html', matches=user_matches)
 
 
 
@@ -152,17 +225,16 @@ def mentorship():
     return render_template('mentorship.html', form=form, sessions=sessions)
 
 
-@routes.route("/mentor_sessions", methods=['GET', 'POST'])
+@routes.route("/mentor_sessions")
 @login_required
 def mentor_sessions():
     if current_user.role != 'mentor':
-        abort(403)  
+        abort(403)
 
-    sessions = MentorshipSession.query.filter_by(mentor_id=current_user.id).all()
-    for session in sessions:
-        session.startup = User.query.get(session.startup_id)
+    mentor = current_user.mentor
+    requests = MentorshipRequest.query.filter_by(mentor_id=mentor.id).all()
+    return render_template('mentor_sessions.html', requests=requests)
 
-    return render_template('mentor_sessions.html', sessions=sessions)
 
 
 @routes.route("/approve_session/<int:session_id>")
@@ -235,6 +307,58 @@ def search():
 
 
 
+# @routes.route("/admin_dashboard")
+# @login_required
+# def admin_dashboard():
+#     if current_user.role != 'admin':
+#         abort(403)
+
+#     users = User.query.all()
+#     startups = User.query.filter_by(role='startup').count()
+#     investors = User.query.filter_by(role='investor').count()
+#     mentors = User.query.filter_by(role='mentor').count()
+#     admins = User.query.filter_by(role='admin').count()
+
+#     matches = match_startups_to_investors()
+#     match_count = len(matches)
+#     average_score = round(sum(m['score'] for m in matches) / match_count, 2) if matches else 0
+#     high_quality_matches = sum(1 for m in matches if m['score'] >= 70)
+
+#     # Buckets for the pie chart
+#     score_ranges = {
+#         '0-30': 0,
+#         '31-50': 0,
+#         '51-70': 0,
+#         '71-90': 0,
+#         '91-100': 0
+#     }
+
+#     for match in matches:
+#         score = match['score']
+#         if score <= 30:
+#             score_ranges['0-30'] += 1
+#         elif score <= 50:
+#             score_ranges['31-50'] += 1
+#         elif score <= 70:
+#             score_ranges['51-70'] += 1
+#         elif score <= 90:
+#             score_ranges['71-90'] += 1
+#         else:
+#             score_ranges['91-100'] += 1
+
+#     return render_template(
+#         'admin_dashboard.html',
+#         users=users,
+#         startups=startups,
+#         investors=investors,
+#         mentors=mentors,
+#         admins=admins,
+#         match_count=match_count,
+#         average_score=average_score,
+#         high_quality_matches=high_quality_matches,
+#         score_ranges=score_ranges
+#     )
+
 
 @routes.route("/admin_dashboard")
 @login_required
@@ -243,19 +367,82 @@ def admin_dashboard():
         abort(403)
 
     users = User.query.all()
+    startups_query = User.query.filter_by(role='startup')
+    investors_query = User.query.filter_by(role='investor')
 
-    startups = User.query.filter_by(role='startup').count()
-    investors = User.query.filter_by(role='investor').count()
+    startups = startups_query.count()
+    investors = investors_query.count()
     mentors = User.query.filter_by(role='mentor').count()
     admins = User.query.filter_by(role='admin').count()
-    
+
+    matches = match_startups_to_investors()
+    match_count = len(matches)
+    average_score = round(sum(m['score'] for m in matches) / match_count, 2) if matches else 0
+    high_quality_matches = sum(1 for m in matches if m['score'] >= 70)
+
+    # Match score ranges
+    score_ranges = {'0-30': 0, '31-50': 0, '51-70': 0, '71-90': 0, '91-100': 0}
+    for match in matches:
+        score = match['score']
+        if score <= 30:
+            score_ranges['0-30'] += 1
+        elif score <= 50:
+            score_ranges['31-50'] += 1
+        elif score <= 70:
+            score_ranges['51-70'] += 1
+        elif score <= 90:
+            score_ranges['71-90'] += 1
+        else:
+            score_ranges['91-100'] += 1
+
+    # Access related startup/investor profiles
+    startup_profiles = [s.startup for s in startups_query if s.startup]
+    investor_profiles = [i.investor for i in investors_query if i.investor]
+
+    # 💸 Average Funding Needs
+    funding_values = [s.funding_needed for s in startup_profiles if s.funding_needed]
+    avg_funding_needs = round(sum(funding_values) / len(funding_values), 2) if funding_values else 0
+
+    # 💰 Total Valuation
+    valuation_values = [s.valuation for s in startup_profiles if s.valuation]
+    total_valuation = round(sum(valuation_values), 2)
+
+    # 📍 Top Startup Locations
+    from collections import Counter
+    location_counts = Counter([s.location for s in startup_profiles if s.location])
+    top_locations = dict(location_counts.most_common(5))
+
+    # 📊 Investor Check Size Histogram (average min/max)
+    check_size_data = [
+        (inv.check_size_min + inv.check_size_max) / 2
+        for inv in investor_profiles
+        if inv.check_size_min and inv.check_size_max
+    ]
+
+    # 🏷️ Funding Stage Distribution
+    stage_counts = Counter([s.stage for s in startup_profiles if s.stage])
+    funding_stage_data = dict(stage_counts)
+
+    # ✅ Top 5 Strongest Matches
+    top_matches = sorted(matches, key=lambda x: x['score'], reverse=True)[:5]
+
     return render_template(
-        'admin_dashboard.html', 
+        'admin_dashboard.html',
         users=users,
         startups=startups,
         investors=investors,
         mentors=mentors,
-        admins=admins
+        admins=admins,
+        match_count=match_count,
+        average_score=average_score,
+        high_quality_matches=high_quality_matches,
+        score_ranges=score_ranges,
+        avg_funding_needs=avg_funding_needs,
+        total_valuation=total_valuation,
+        top_locations=top_locations,
+        check_size_data=check_size_data,
+        top_matches=top_matches,
+        funding_stage_data=funding_stage_data
     )
 
 
@@ -324,25 +511,60 @@ def activity_logs():
 
 
 
-@routes.route('/investor/startups')
+@routes.route('/investor/startups', methods=['GET'])
 @login_required
 def investor_startups():
     if current_user.role != 'investor':
-        abort(403)  
+        abort(403)
 
-    startups = User.query.filter_by(role='startup', approved=True).all()
-    return render_template('investor_startups.html', startups=startups)
+    selected_industry = request.args.get('industry')
+    selected_stage = request.args.get('stage')
+    selected_location = request.args.get('location')
+
+    query = db.session.query(User, Startup).join(Startup, User.id == Startup.user_id)\
+        .filter(User.role == 'startup', User.approved == True)
+
+    if selected_industry and selected_industry != 'All':
+        query = query.filter(Startup.industry == selected_industry)
+
+    if selected_stage and selected_stage != 'All':
+        query = query.filter(Startup.stage == selected_stage)
+
+    if selected_location and selected_location != 'All':
+        query = query.filter(Startup.location == selected_location)
+
+    startups = query.all()
+
+    # Distinct values for dropdowns
+    industries = [i[0] for i in db.session.query(Startup.industry).distinct().all() if i[0]]
+    stages = [s[0] for s in db.session.query(Startup.stage).distinct().all() if s[0]]
+    locations = [l[0] for l in db.session.query(Startup.location).distinct().all() if l[0]]
+
+    return render_template(
+        'investor_startups.html',
+        startups=startups,
+        industries=industries,
+        stages=stages,
+        locations=locations,
+        selected_industry=selected_industry,
+        selected_stage=selected_stage,
+        selected_location=selected_location
+    )
+
 
 
 
 @routes.route('/startup/<int:startup_id>')
 @login_required
 def view_startup(startup_id):
-    startup = User.query.get_or_404(startup_id)
-    if startup.role != 'startup':
+    user = User.query.get_or_404(startup_id)
+    if user.role != 'startup':
         abort(404)
 
-    return render_template('startup_profile.html', startup=startup)
+    startup = Startup.query.filter_by(user_id=user.id).first()
+    return render_template('startup_profile.html', user=user, startup=startup)
+
+
 
 
 @routes.route('/startups')
@@ -351,24 +573,53 @@ def startups():
     return render_template('startups.html', startups=startups)
 
 
+
 @routes.route("/investor_form", methods=['GET', 'POST'])
 @login_required
 def investor_form():
     if current_user.role != 'investor':
-        abort(403)  
+        abort(403)
 
     form = InvestorForm()
+
+    existing = Investor.query.filter_by(user_id=current_user.id).first()
+    if request.method == 'GET' and existing:
+        form.firm_name.data = existing.firm_name
+        form.location.data = existing.location
+        form.check_size_min.data = existing.check_size_min
+        form.check_size_max.data = existing.check_size_max
+        form.industry_focus.data = existing.industry_focus
+        form.stage_focus.data = existing.stage_focus
+        form.portfolio.data = existing.portfolio
+        form.deal_preferences.data = existing.deal_preferences
+        form.investment_thesis.data = existing.investment_thesis
+        form.engagement_style.data = existing.engagement_style
+        form.past_exits.data = existing.past_exits
+
     if form.validate_on_submit():
-        investor = Investor(user_id=current_user.id, 
-                            investment_range_min=form.investment_range_min.data, 
-                            investment_range_max=form.investment_range_max.data, 
-                            industry_focus=form.industry_focus.data, 
-                            description=form.description.data)
+        if existing:
+            investor = existing
+        else:
+            investor = Investor(user_id=current_user.id)
+
+        investor.firm_name = form.firm_name.data
+        investor.location = form.location.data
+        investor.check_size_min = form.check_size_min.data
+        investor.check_size_max = form.check_size_max.data
+        investor.industry_focus = form.industry_focus.data
+        investor.stage_focus = form.stage_focus.data
+        investor.portfolio = form.portfolio.data
+        investor.deal_preferences = form.deal_preferences.data
+        investor.investment_thesis = form.investment_thesis.data
+        investor.engagement_style = form.engagement_style.data
+        investor.past_exits = form.past_exits.data
+
         db.session.add(investor)
         db.session.commit()
-        flash('Investor details saved!', 'success')
+
+        flash('Investor profile saved successfully!', 'success')
         return redirect(url_for('routes.dashboard'))
-    
+
     return render_template('investor_form.html', form=form)
 
 
@@ -376,19 +627,219 @@ def investor_form():
 @login_required
 def startup_form():
     if current_user.role != 'startup':
-        abort(403)  
+        abort(403)
 
     form = StartupForm()
-    if form.validate_on_submit():
-        startup = Startup(user_id=current_user.id, 
-                          company_name=form.company_name.data, 
-                          industry=form.industry.data, 
-                          funding_needed=form.funding_needed.data, 
-                          description=form.description.data)
-        db.session.add(startup)
-        db.session.commit()
-        flash('Startup details saved!', 'success')
-        return redirect(url_for('routes.dashboard'))
-    
-    return render_template('startup_form.html', form=form)
+    startup = Startup.query.filter_by(user_id=current_user.id).first()
 
+    if form.validate_on_submit():
+        print("✅ Form validated!")
+
+        # Create if not exists
+        if not startup:
+            startup = Startup(user_id=current_user.id)
+            db.session.add(startup)
+
+        # Fill in fields
+        form.populate_obj(startup)
+
+        # ⚠️ Handle file deletion if checkboxes are checked
+        if form.clear_logo.data and startup.logo:
+            delete_file_if_exists(startup.logo)
+            startup.logo = None
+
+        if form.clear_pitch_deck.data and startup.pitch_deck:
+            delete_file_if_exists(startup.pitch_deck)
+            startup.pitch_deck = None
+
+        if form.clear_demo_video.data and startup.demo_video:
+            delete_file_if_exists(startup.demo_video)
+            startup.demo_video = None
+
+        # 🆕 Handle file uploads
+        if form.logo.data:
+            if startup.logo:
+                delete_file_if_exists(startup.logo)
+            startup.logo = save_file(form.logo.data, "logos")
+
+        if form.pitch_deck.data:
+            if startup.pitch_deck:
+                delete_file_if_exists(startup.pitch_deck)
+            startup.pitch_deck = save_file(form.pitch_deck.data, "pitch_decks")
+
+        if form.demo_video.data:
+            if startup.demo_video:
+                delete_file_if_exists(startup.demo_video)
+            startup.demo_video = save_file(form.demo_video.data, "demo_videos")
+
+        try:
+            db.session.commit()
+            flash("✅ Startup profile saved successfully!", "success")
+            return redirect(url_for('routes.dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            print("🔥 DB Commit Error:", e)
+            flash("An error occurred while saving your data. Please try again.", "danger")
+
+    elif request.method == 'POST':
+        print("❌ Validation failed:", form.errors)
+
+    # Pre-fill values for GET request
+    if request.method == 'GET' and startup:
+        for field in form:
+            if hasattr(startup, field.name):
+                setattr(field, 'data', getattr(startup, field.name))
+
+    return render_template("startup_form.html", form=form, startup=startup)
+
+
+################## MENTOR#############
+import spacy
+nlp = spacy.load("en_core_web_md")
+
+
+
+@routes.route('/mentor_profile/<int:mentor_id>')
+@login_required
+def mentor_profile(mentor_id):
+    mentor = Mentor.query.get_or_404(mentor_id)
+    return render_template('mentor_profile.html', mentor=mentor)
+
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+@routes.route('/recommended_mentors')
+@login_required
+def recommended_mentors():
+    if current_user.role != 'startup':
+        abort(403)
+
+    startup = current_user.startup
+    startup_text = " ".join([
+        startup.industry or "",
+        startup.tech_stack or "",
+        startup.competitive_advantage or ""
+    ]).strip().lower()
+
+    if not startup_text:
+        flash("Please complete your startup profile (e.g. industry, tech stack).")
+        return redirect(url_for('routes.dashboard'))
+
+    mentors = Mentor.query.all()
+    mentor_data = [(m, (m.expertise or "").strip().lower()) for m in mentors if (m.expertise or "").strip()]
+
+    if not mentor_data:
+        flash("No mentors with expertise available.")
+        return redirect(url_for('routes.dashboard'))
+
+    doc_startup = nlp(startup_text)
+    matches = []
+
+    for mentor, expertise_text in mentor_data:
+        doc_mentor = nlp(expertise_text)
+        semantic_score = doc_startup.similarity(doc_mentor)  # Semantic similarity (0–1)
+
+        matches.append((mentor, round(semantic_score * 100, 2)))
+
+    # Filter and sort
+    top_matches = [match for match in sorted(matches, key=lambda x: x[1], reverse=True) if match[1] > 20]
+
+    return render_template('recommended_mentors.html', matches=top_matches)
+
+
+
+
+
+from datetime import datetime
+from flask import request, redirect, flash
+
+@routes.route('/request_mentorship/<int:mentor_id>', methods=['GET', 'POST'])
+@login_required
+def request_mentorship(mentor_id):
+    if current_user.role != 'startup':
+        abort(403)
+
+    if request.method == 'POST':
+        date = request.form.get('date')
+        time = request.form.get('time')
+
+        new_request = MentorshipRequest(
+            startup_id=current_user.startup.id,
+            mentor_id=mentor_id,
+            request_date=datetime.strptime(date, "%Y-%m-%d").date(),
+            request_time=datetime.strptime(time, "%H:%M").time(),
+            status='Pending'
+        )
+        db.session.add(new_request)
+        db.session.commit()
+        flash("Mentorship request sent.")
+        return redirect(url_for('routes.dashboard'))
+
+    mentor = Mentor.query.get_or_404(mentor_id)
+    return render_template('request_mentorship.html', mentor=mentor)
+
+
+
+@routes.route('/manage_requests')
+@login_required
+def manage_requests():
+    if current_user.role != 'mentor':
+        abort(403)
+    mentor = current_user.mentor
+    requests = MentorshipRequest.query.filter_by(mentor_id=mentor.id).all()
+    return render_template('manage_requests.html', requests=requests)
+
+
+@routes.route('/update_request/<int:request_id>/<action>')
+@login_required
+def update_request(request_id, action):
+    req = MentorshipRequest.query.get_or_404(request_id)
+
+    # Ensure only the mentor can update this request
+    if current_user.role != 'mentor' or current_user.mentor.id != req.mentor_id:
+        abort(403)
+
+    if action == 'accept':
+        req.status = 'Accepted'
+        message = f"Your mentorship request for {req.request_date} at {req.request_time.strftime('%H:%M')} was accepted."
+    elif action == 'reject':
+        req.status = 'Rejected'
+        message = f"Your mentorship request for {req.request_date} at {req.request_time.strftime('%H:%M')} was rejected."
+    else:
+        abort(400)
+
+    db.session.commit()
+
+    # Notify the startup user
+    notif = Notification(
+        user_id=req.startup.user_id,
+        message=message
+    )
+    db.session.add(notif)
+    db.session.commit()
+
+    flash(f"Request has been {req.status.lower()} and startup notified.")
+    return redirect(url_for('routes.mentor_sessions'))
+
+
+@routes.route('/mentor_profile_form', methods=['GET', 'POST'])
+@login_required
+def mentor_profile_form():
+    if current_user.role != 'mentor':
+        abort(403)
+
+    mentor = current_user.mentor
+    form = MentorForm(obj=mentor)
+
+    if form.validate_on_submit():
+        if not mentor:
+            mentor = Mentor(user_id=current_user.id)
+            db.session.add(mentor)
+
+        form.populate_obj(mentor)
+        db.session.commit()
+        flash('Mentor profile updated successfully.')
+        return redirect(url_for('routes.dashboard'))
+
+    return render_template('mentor_profile_form.html', form=form)

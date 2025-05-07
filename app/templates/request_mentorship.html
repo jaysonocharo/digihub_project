@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h3>Request Mentorship from {{ mentor.user.username }}</h3>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="date" class="form-label">Date:</label>
+            <input type="date" id="date" name="date" class="form-control" required title="Select a preferred mentorship date">
+        </div>
+        <div class="mb-3">
+            <label for="time" class="form-label">Time:</label>
+            <input type="time" id="time" name="time" class="form-control" required title="Select a preferred mentorship time">
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Send Request</button>
+    </form>
+</div>
+{% endblock %}
+

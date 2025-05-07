@@ -6,7 +6,183 @@
 <div class="dashboard-container">
     <h2>Admin Management Dashboard</h2>
 
-    <div class="table-container">
+
+    <!-- New Stats Section -->
+    <div class="row text-center mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3">
+                <h6>💸 Average Funding Needs</h6>
+                <p class="lead">Ksh.{{ avg_funding_needs }}</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3">
+                <h6>💰 Total Valuation</h6>
+                <p class="lead">Ksh.{{ total_valuation }}</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3">
+                <h6>📍 Top Startup Locations</h6>
+                <ul class="list-unstyled">
+                    {% for location, count in top_locations.items() %}
+                    <li>{{ location }}: {{ count }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Funding Stage Distribution Chart -->
+    <!-- <div class="charts-container mb-4">
+        <div class="chart-box">
+            <h5 class="text-center">🏷️ Funding Stage Distribution</h5>
+            <canvas id="fundingStageChart"></canvas>
+        </div>
+    </div>
+
+    <div class="charts-container mb-4">
+        <div class="chart-box">
+            <h5 class="text-center">📊 Investor Check Sizes</h5>
+            <canvas id="checkSizeChart"></canvas>
+        </div>
+    </div> -->
+
+    <!-- Top Matches -->
+    <div class="table-container mt-4">
+        <h5>✅ Top 5 Strongest Matches</h5>
+        <table class="table table-bordered">
+            <thead class="table-secondary">
+                <tr>
+                    <th>Startup</th>
+                    <th>Investor</th>
+                    <th>Score (%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for match in top_matches %}
+                <tr>
+                    <td>{{ match.startup_name }}</td>
+                    <td>{{ match.investor_name }}</td>
+                    <td>{{ match.score }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+   
+
+
+<!--End of added content-->
+
+    <!-- The container for the bar chart-->
+    <div class="charts-container">
+        <div class="chart-box">
+            <canvas id="userChart"></canvas>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="alert alert-info text-center mt-4">
+    <h5><i class="bi bi-stars"></i> Total AI-Generated Matches:
+        <span class="badge bg-primary">{{ match_count }}</span>
+    </h5>
+
+    <h6>Average Match Score:
+        {% if average_score >= 80 %}
+            <span class="badge bg-success">{{ average_score }}%</span>
+        {% elif average_score >= 50 %}
+            <span class="badge bg-warning text-dark">{{ average_score }}%</span>
+        {% else %}
+            <span class="badge bg-danger">{{ average_score }}%</span>
+        {% endif %}
+    </h6>
+
+    <h6>High-Quality Matches (score ≥ 70%):
+        <span class="badge bg-success">{{ high_quality_matches }}</span>
+    </h6>
+</div>
+
+
+
+<!-- User Role Distribution Chart -->
+<script>
+    var ctx1 = document.getElementById('userChart').getContext('2d');
+    var userRolesData = JSON.parse('{{ [startups, investors, mentors, admins] | tojson | safe }}');
+
+    var userChart = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: ['Startups', 'Investors', 'Mentors', 'Admins'],
+            datasets: [{
+                label: 'User Roles Distribution',
+                data: userRolesData,
+                backgroundColor: ['blue', 'green', 'orange', 'red']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+
+<!-- Pie Chart for Match Score Ranges -->
+<div class="charts-container mt-4">
+    <div class="chart-box">
+        <h5 class="text-center">Match Score Ranges</h5>
+        <canvas id="scorePieChart"></canvas>
+    </div>
+</div>
+
+<script>
+    const scoreData = JSON.parse('{{ score_ranges | tojson | safe }}');
+    const labels = Object.keys(scoreData);
+    const data = Object.values(scoreData);
+
+    const ctxPie = document.getElementById('scorePieChart').getContext('2d');
+    const scorePieChart = new Chart(ctxPie, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Match Score Ranges',
+                data: data,
+                backgroundColor: [
+                    '#e57373', '#fdd835', '#81c784', '#4fc3f7', '#9575cd'
+                ],
+                borderColor: '#fff',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'right',
+                },
+                title: {
+                    display: false
+                }
+            }
+        }
+    });
+</script>
+
+
+    <div class="table-container mt-5">
         <h3>Manage Users</h3>
         <table class="table table-bordered">
             <thead class="table-dark">
@@ -91,42 +267,4 @@
         </table>
     </div>
 
-    <!-- The container for the bar chart-->
-    <div class="charts-container">
-        <div class="chart-box">
-            <canvas id="userChart"></canvas>
-        </div>
-    </div>
-</div>
-
-<!-- User Role Distribution Chart -->
-<script>
-    var ctx1 = document.getElementById('userChart').getContext('2d');
-    var userRolesData = JSON.parse('{{ [startups, investors, mentors, admins] | tojson | safe }}');
-
-    var userChart = new Chart(ctx1, {
-        type: 'bar',
-        data: {
-            labels: ['Startups', 'Investors', 'Mentors', 'Admins'],
-            datasets: [{
-                label: 'User Roles Distribution',
-                data: userRolesData,
-                backgroundColor: ['blue', 'green', 'orange', 'red']
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1,
-                        precision: 0
-                    }
-                }
-            }
-        }
-    });
-</script>
 {% endblock %}
