@@ -552,18 +552,24 @@ def investor_startups():
     )
 
 
+# @routes.route('/startup/<int:startup_id>')
+# @login_required
+# def view_startup(startup_id):
+#     user = User.query.get_or_404(startup_id)
+#     if user.role != 'startup':
+#         abort(404)
 
-
+#     startup = Startup.query.filter_by(user_id=user.id).first()
+#     return render_template('startup_profile.html', user=user, startup=startup)
 @routes.route('/startup/<int:startup_id>')
 @login_required
 def view_startup(startup_id):
-    user = User.query.get_or_404(startup_id)
-    if user.role != 'startup':
+    startup = Startup.query.get_or_404(startup_id)
+
+    if not startup.user or startup.user.role != 'startup':
         abort(404)
 
-    startup = Startup.query.filter_by(user_id=user.id).first()
-    return render_template('startup_profile.html', user=user, startup=startup)
-
+    return render_template('startup_profile.html', user=startup.user, startup=startup)
 
 
 

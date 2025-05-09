@@ -16,14 +16,10 @@ login_manager.login_view = 'routes.login'
 def create_app():
     app = Flask(__name__)
 
-    app.config['SECRET_KEY'] = 'fjalfjdas flskjfksalk'  
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///digihub2.db?check_same_thread=False&timeout=30'
+    # Load configuration from Config class
+    app.config.from_object(Config)
 
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['SESSION_PERMANENT'] = False
-    app.config['SESSION_TYPE'] = "filesystem"
-
-    # 🔽 Upload-related config
+    # Upload config
     import os
     UPLOAD_FOLDER = os.path.join(os.getcwd(), 'app', 'static', 'uploads')
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf', 'mp4', 'mov', 'doc', 'docx'}
@@ -31,6 +27,11 @@ def create_app():
     app.config['ALLOWED_EXTENSIONS'] = ALLOWED_EXTENSIONS
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
 
+    # Session config
+    app.config['SESSION_PERMANENT'] = False
+    app.config['SESSION_TYPE'] = "filesystem"
+
+    # Init extensions
     db.init_app(app)
     migrate.init_app(app, db)
     bcrypt.init_app(app)
@@ -38,7 +39,7 @@ def create_app():
     Session(app)
 
     print("Using database:", app.config['SQLALCHEMY_DATABASE_URI'])
-    
+
     from app.routes import routes
     app.register_blueprint(routes)
 
