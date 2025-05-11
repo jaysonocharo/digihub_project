@@ -11,7 +11,7 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(60), nullable=False)
+    password = db.Column(db.String(256), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='startup')
     approved = db.Column(db.Boolean, default=False)
 
@@ -22,9 +22,9 @@ class User(db.Model, UserMixin):
 
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
 
-    startup = db.relationship('Startup', backref='user', uselist=False)
-    investor = db.relationship('Investor', backref='user', uselist=False)
-    mentor = db.relationship('Mentor', backref='user', uselist=False)
+    startup = db.relationship('Startup', backref='user', uselist=False, cascade="all, delete-orphan")
+    investor = db.relationship('Investor', backref='user', uselist=False, cascade="all, delete-orphan")
+    mentor = db.relationship('Mentor', backref='user', uselist=False, cascade="all, delete-orphan")
 
     def is_admin(self): return self.role == 'admin'
     def is_startup(self): return self.role == 'startup'
@@ -34,7 +34,7 @@ class User(db.Model, UserMixin):
 
 class Startup(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
 
     company_name = db.Column(db.String(100), nullable=False)
     logo = db.Column(db.String(120))  # Optional file path
@@ -69,13 +69,20 @@ class Startup(db.Model):
     demo_video = db.Column(db.String(120))  # filepath or video URL
     website = db.Column(db.String(200))
     social_links = db.Column(db.Text)
+    phone_number = db.Column(db.String(20))
+    whatsapp = db.Column(db.String(100))
+    instagram = db.Column(db.String(100))
+    facebook = db.Column(db.String(100))
+    twitter_x = db.Column(db.String(100))
+    linkedin = db.Column(db.String(100))
+
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 class Investor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
 
     firm_name = db.Column(db.String(100))
     location = db.Column(db.String(100))
@@ -118,7 +125,8 @@ class ActivityLog(db.Model):
 
 class Mentor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+
     expertise = db.Column(db.Text)
     years_experience = db.Column(db.Integer)
     industry_focus = db.Column(db.String(120))
@@ -135,3 +143,5 @@ class MentorshipRequest(db.Model):
 
     startup = db.relationship('Startup', backref='mentorship_requests')
     mentor = db.relationship('Mentor', backref='mentorship_requests')
+
+

@@ -35,11 +35,5 @@ def delete_file_if_exists(file_path):
         print("Error deleting file:", e)
 
 
-# def delete_file_if_exists(relative_path):
-#     try:
-#         absolute_path = os.path.join(current_app.root_path, 'static', relative_path.replace('/', os.sep))
-#         if os.path.exists(absolute_path):
-#             os.remove(absolute_path)
-#     except Exception as e:
-#         print(f"Error deleting file: {e}")
+
 

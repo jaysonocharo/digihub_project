@@ -1,14 +1,15 @@
 from app import create_app, db
-from app.models import Startup
+from app.models import User, Startup
 
-# Initialize Flask app context
+# # Initialize Flask app context
 app = create_app()
 app.app_context().push()
 
-# Query the startup with ID=1
-startup = Startup.query.get(1)
+#delete the 2 pairs of matching startups and investors
+users = User.query.filter(User.email.like('match_%')).all()
+for user in users:
+    db.session.delete(user)
+db.session.commit()
 
-if startup:
-    print(f"✅ Startup with ID=1 found: {startup.company_name}")
-else:
-    print("❌ No startup found with ID=1")
+
+

@@ -4,41 +4,76 @@
 
 {% block content %}
 
-    {% if logo %}
-    <div class="card mb-4" style="max-width: 200px; margin: auto;">
-        <img src="{{ logo }}" class="card-img-top" alt="Startup Logo">
-    </div>
-    {% endif %}
+<style>
+    .btn-action {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease-in-out;
+    }
 
-    <h2>Welcome to Your Dashboard</h2>
+    .btn-action:hover {
+        transform: translateY(-2px);
+    }
+</style>
 
-    {% if current_user.is_authenticated %}
-        <p>Hello, {{ current_user.username }}!</p>
-        <p>Your role: {{ current_user.role }}</p>
-        <p>You are logged in!</p>
+{% if logo %}
+<div class="card mb-4" style="max-width: 200px; margin: auto;">
+    <img src="{{ logo }}" class="card-img-top" alt="Startup Logo">
+</div>
+{% endif %}
 
+<h2 class="text-center mb-3"><i class="bi bi-house-door-fill me-2 text-primary"></i><strong>Welcome to Your Dashboard</strong></h2>
 
-        <a href="{{ url_for('routes.logout') }}" class="btn btn-danger">Logout</a>
-        <a href="{{ url_for('routes.profile') }}" class="btn btn-primary">User Profile</a>
-        <a href="{{ url_for('routes.notifications') }}" class="btn btn-info">Notifications</a>
-        <a href="{{ url_for('routes.search') }}" class="btn btn-success">Search Users</a>
+{% if current_user.is_authenticated %}
+    <p class="text-center">Hello, <strong>{{ current_user.username }}</strong>!</p>
+    <p class="text-center text-muted">Your role: {{ current_user.role }}</p>
+
+    <div class="d-grid gap-3 d-md-block mb-4 text-center">
+
+        <a href="{{ url_for('routes.logout') }}" class="btn btn-danger btn-lg rounded-pill btn-action me-2 mb-2">
+            <i class="bi bi-box-arrow-right me-1"></i> Logout
+        </a>
+
+        <a href="{{ url_for('routes.profile') }}" class="btn btn-primary btn-lg rounded-pill btn-action me-2 mb-2">
+            <i class="bi bi-person-circle me-1"></i> User Profile
+        </a>
+
+        <a href="{{ url_for('routes.notifications') }}" class="btn btn-outline-info btn-lg rounded-pill btn-action me-2 mb-2">
+            <i class="bi bi-bell-fill me-1"></i> Notifications
+        </a>
+
+        <a href="{{ url_for('routes.search') }}" class="btn btn-success btn-lg rounded-pill btn-action me-2 mb-2">
+            <i class="bi bi-search me-1"></i> Search Users
+        </a>
 
         {% if current_user.role == 'admin' %}
-            <a href="{{ url_for('routes.admin_dashboard') }}" class="btn btn-dark">Admin Dashboard</a>
+            <a href="{{ url_for('routes.admin_dashboard') }}" class="btn btn-dark btn-lg rounded-pill btn-action me-2 mb-2">
+                <i class="bi bi-speedometer2 me-1"></i> Admin Dashboard
+            </a>
         {% endif %}
 
         {% if current_user.role == 'investor' %}
-            <a href="{{ url_for('routes.matches') }}" class="btn btn-primary">Find Startup Matches</a>
-            <a href="{{ url_for('routes.investor_startups') }}" class="btn btn-info">Browse Startups</a>
-            <a href="{{ url_for('routes.investor_form') }}" class="btn btn-warning">Your Investment Details</a>
+            <a href="{{ url_for('routes.matches') }}" class="btn btn-success btn-lg rounded-pill btn-action me-2 mb-2">
+                <i class="bi bi-stars me-1"></i> Find Startup Matches
+            </a>
+            <a href="{{ url_for('routes.investor_startups') }}" class="btn btn-outline-primary btn-lg rounded-pill btn-action me-2 mb-2">
+                <i class="bi bi-briefcase me-1"></i> Browse Startups
+            </a>
+            <a href="{{ url_for('routes.investor_form') }}" class="btn btn-warning btn-lg rounded-pill btn-action me-2 mb-2">
+                <i class="bi bi-cash-stack me-1"></i> Your Investment Details
+            </a>
         {% elif current_user.role == 'startup' %}
-            <a href="{{ url_for('routes.mentorship') }}" class="btn btn-secondary">Request Mentorship</a>
-            <a href="{{ url_for('routes.startup_form') }}" class="btn btn-warning">Your Startup Details</a>
+            <a href="{{ url_for('routes.mentorship') }}" class="btn btn-outline-secondary btn-lg rounded-pill btn-action me-2 mb-2">
+                <i class="bi bi-person-plus me-1"></i> Request Mentorship
+            </a>
+            <a href="{{ url_for('routes.startup_form') }}" class="btn btn-warning btn-lg rounded-pill btn-action me-2 mb-2">
+                <i class="bi bi-building me-1"></i> Your Startup Details
+            </a>
+            <a href="{{ url_for('routes.recommended_mentors') }}" class="btn btn-success btn-lg rounded-pill btn-action me-2 mb-2">
+                <i class="bi bi-lightbulb me-1"></i> View Recommended Mentors
+            </a>
 
-            <a href="{{ url_for('routes.recommended_mentors') }}" class="btn btn-success">View Recommended Mentors</a>
-            
             {% if startup_info %}
-            <div class="card text-center mb-4">
+            <div class="card text-center mb-4 mt-3">
                 {% if startup_info.logo %}
                     <img src="{{ startup_info.logo }}" class="card-img-top mx-auto mt-3" style="max-width: 150px;" alt="Startup Logo">
                 {% endif %}
@@ -50,36 +85,39 @@
                         <strong>Industry:</strong> 
                         {{ startup_info.industry if startup_info.industry else "Not specified" }}
                     </p>
-                    <a href="{{ startup_info.profile_link }}" class="btn btn-outline-primary btn-sm">
-                        View Full Profile
+                    <a href="{{ startup_info.profile_link }}" class="btn btn-outline-primary btn-lg rounded-pill btn-action">
+                        <i class="bi bi-eye-fill me-1"></i> View Full Profile
                     </a>
                 </div>
             </div>
             {% endif %}
 
-            <h3>Your Mentorship Requests</h3>
+            <h3 class="mt-4"><i class="bi bi-journal-text me-2 text-secondary"></i><b>Your Mentorship Requests</b></h3>
             {% if mentorship_requests %}
                 <ul class="list-group">
                 {% for req in mentorship_requests %}
                     <li class="list-group-item">
-                        Requested from <strong>{{ req.mentor.user.username }}</strong> on {{ req.request_date }} at {{ req.request_time }} -
+                        Requested from <strong>{{ req.mentor.user.username }}</strong> on {{ req.request_date }} at {{ req.request_time }} –
                         <span class="badge bg-secondary">{{ req.status }}</span>
                     </li>
                 {% endfor %}
                 </ul>
             {% else %}
-                <p>No requests made yet.</p>
+                <p class="text-muted">No requests made yet.</p>
             {% endif %}
-            
 
         {% elif current_user.role == 'mentor' %}
-            <a href="{{ url_for('routes.mentor_profile_form') }}" class="btn btn-primary">Edit Your Mentor Profile</a>
-            <a href="{{ url_for('routes.mentor_sessions') }}" class="btn btn-success">View Mentorship Sessions</a>
+            <a href="{{ url_for('routes.mentor_profile_form') }}" class="btn btn-primary btn-lg rounded-pill btn-action me-2 mb-2">
+                <i class="bi bi-pencil-square me-1"></i> Edit Your Mentor Profile
+            </a>
+            <a href="{{ url_for('routes.mentor_sessions') }}" class="btn btn-success btn-lg rounded-pill btn-action me-2 mb-2">
+                <i class="bi bi-calendar-check me-1"></i> View Sessions
+            </a>
 
             {% if current_user.mentor %}
             <div class="card mt-4">
                 <div class="card-body">
-                    <h4 class="card-title">Your Mentor Profile</h4>
+                    <h4 class="card-title"><i class="bi bi-person-vcard me-2 text-primary"></i>Your Mentor Profile</h4>
                     <p><strong>Expertise:</strong> {{ current_user.mentor.expertise or "Not provided" }}</p>
                     <p><strong>Years of Experience:</strong> {{ current_user.mentor.years_experience or "Not provided" }}</p>
                     <p><strong>Industry Focus:</strong> {{ current_user.mentor.industry_focus or "Not provided" }}</p>
@@ -88,13 +126,7 @@
                 </div>
             </div>
             {% endif %}
-        
         {% endif %}
-    {% endif %}
-
-
+{% endif %}
 
 {% endblock %}
-
-
-

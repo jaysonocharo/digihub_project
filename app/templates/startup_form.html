@@ -113,6 +113,26 @@
                 </div>
             </div>
 
+            <!-- Contact Links -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingContact">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseContact">
+                        Contact & Social Links
+                    </button>
+                </h2>
+                <div id="collapseContact" class="accordion-collapse collapse" data-bs-parent="#startupAccordion">
+                    <div class="accordion-body">
+                        {{ form.phone_number.label }} {{ form.phone_number(class="form-control") }}
+                        {{ form.whatsapp.label }} {{ form.whatsapp(class="form-control") }}
+                        {{ form.instagram.label }} {{ form.instagram(class="form-control") }}
+                        {{ form.facebook.label }} {{ form.facebook(class="form-control") }}
+                        {{ form.twitter_x.label }} {{ form.twitter_x(class="form-control") }}
+                        {{ form.linkedin.label }} {{ form.linkedin(class="form-control") }}
+                    </div>
+                </div>
+            </div>
+
+
             <!-- Media -->
             <div class="accordion-item">
                 <h2 class="accordion-header" id="headingMedia">

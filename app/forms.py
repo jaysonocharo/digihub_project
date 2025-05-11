@@ -2,9 +2,10 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, SelectField, TextAreaField, StringField, BooleanField, DateField, IntegerField, FloatField
 from wtforms.validators import DataRequired, Length, Email, EqualTo
 from datetime import date
-from wtforms.validators import ValidationError, DataRequired, NumberRange, Optional
+from wtforms.validators import ValidationError, DataRequired, NumberRange, Optional,  Regexp, URL
 from wtforms.fields import DateTimeLocalField
 from flask_wtf.file import FileField, FileAllowed, FileRequired
+
 
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=2, max=50)])
@@ -94,6 +95,30 @@ class StartupForm(FlaskForm):
 
     website = StringField('Website')
     social_links = TextAreaField('Social Media Links (one per line)')
+
+    phone_number = StringField('Phone Number', validators=[
+        Optional(),
+        Regexp(r'^\+?2547\d{8}$', message="Enter a valid Kenyan phone number starting with +2547...")
+    ], render_kw={"placeholder": "+254712345678"})
+
+    whatsapp = StringField('WhatsApp Number', validators=[
+        Optional(),
+        Regexp(r'^\d{10,15}$', message="Enter WhatsApp number without + or spaces (e.g., 254712345678)" )
+    ], render_kw={"placeholder": "254712345678"})
+
+    instagram = StringField('Instagram Profile', validators=[Optional()],
+        render_kw={"placeholder": "https://instagram.com/yourprofile"})
+
+    facebook = StringField('Facebook Profile', validators=[Optional()],
+        render_kw={"placeholder": "https://facebook.com/yourpage"})
+
+    twitter_x = StringField('X (Twitter) Profile', validators=[Optional()],
+        render_kw={"placeholder": "https://twitter.com/yourhandle"})
+
+    linkedin = StringField('LinkedIn Profile', validators=[Optional()],
+        render_kw={"placeholder": "https://linkedin.com/in/yourprofile"})
+
+
     description = TextAreaField('Description')
 
     submit = SubmitField('Save Startup Details')

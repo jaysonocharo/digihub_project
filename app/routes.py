@@ -552,15 +552,6 @@ def investor_startups():
     )
 
 
-# @routes.route('/startup/<int:startup_id>')
-# @login_required
-# def view_startup(startup_id):
-#     user = User.query.get_or_404(startup_id)
-#     if user.role != 'startup':
-#         abort(404)
-
-#     startup = Startup.query.filter_by(user_id=user.id).first()
-#     return render_template('startup_profile.html', user=user, startup=startup)
 @routes.route('/startup/<int:startup_id>')
 @login_required
 def view_startup(startup_id):
@@ -628,6 +619,13 @@ def investor_form():
 
     return render_template('investor_form.html', form=form)
 
+def format_social_link(base_url, value):
+    if not value:
+        return None
+    value = value.strip()
+    if value.startswith("http"):
+        return value
+    return base_url + value
 
 @routes.route("/startup_form", methods=['GET', 'POST'])
 @login_required
@@ -641,43 +639,88 @@ def startup_form():
     if form.validate_on_submit():
         print("✅ Form validated!")
 
-        # Create if not exists
+        # Create startup if not exists
         if not startup:
             startup = Startup(user_id=current_user.id)
             db.session.add(startup)
 
-        # Fill in fields
-        form.populate_obj(startup)
+        # --- Manually assign all fields (excluding files) ---
+        startup.company_name = form.company_name.data
+        startup.industry = form.industry.data
+        startup.location = form.location.data
+        startup.founding_date = form.founding_date.data
+        startup.team_size = form.team_size.data
+        startup.revenue_streams = form.revenue_streams.data
+        startup.pricing_strategy = form.pricing_strategy.data
+        startup.customer_acquisition_cost = form.customer_acquisition_cost.data
+        startup.stage = form.stage.data
+        startup.funding_needed = form.funding_needed.data
+        startup.valuation = form.valuation.data
+        startup.previous_funding = form.previous_funding.data
+        startup.revenue = form.revenue.data
+        startup.mrr = form.mrr.data
+        startup.user_growth = form.user_growth.data
+        startup.partnerships = form.partnerships.data
+        startup.tech_stack = form.tech_stack.data
+        startup.ip_rights = form.ip_rights.data
+        startup.competitive_advantage = form.competitive_advantage.data
+        startup.tam = form.tam.data
+        startup.sam = form.sam.data
+        startup.competition = form.competition.data
+        startup.website = form.website.data
+        startup.social_links = form.social_links.data
+        startup.description = form.description.data
 
-        # ⚠️ Handle file deletion if checkboxes are checked
+        # --- Contact & Social Link Formatting ---
+        def format_social_link(base_url, value):
+            if not value:
+                return None
+            value = value.strip().lstrip('@')
+            if value.startswith("http"):
+                return value
+            return base_url + value
+
+        if form.phone_number.data:
+            startup.phone_number = form.phone_number.data.strip().replace(" ", "")
+
+        if form.whatsapp.data:
+            startup.whatsapp = form.whatsapp.data.strip().replace("+", "").replace(" ", "")
+
+        startup.instagram = format_social_link("https://instagram.com/", form.instagram.data)
+        startup.facebook = format_social_link("https://facebook.com/", form.facebook.data)
+        startup.twitter_x = format_social_link("https://twitter.com/", form.twitter_x.data)
+        startup.linkedin = format_social_link("https://linkedin.com/in/", form.linkedin.data)
+
+        # --- File Management ---
+
+        # Logo
         if form.clear_logo.data and startup.logo:
             delete_file_if_exists(startup.logo)
             startup.logo = None
-
-        if form.clear_pitch_deck.data and startup.pitch_deck:
-            delete_file_if_exists(startup.pitch_deck)
-            startup.pitch_deck = None
-
-        if form.clear_demo_video.data and startup.demo_video:
-            delete_file_if_exists(startup.demo_video)
-            startup.demo_video = None
-
-        # 🆕 Handle file uploads
-        if form.logo.data:
+        elif form.logo.data:
             if startup.logo:
                 delete_file_if_exists(startup.logo)
             startup.logo = save_file(form.logo.data, "logos")
 
-        if form.pitch_deck.data:
+        # Pitch Deck
+        if form.clear_pitch_deck.data and startup.pitch_deck:
+            delete_file_if_exists(startup.pitch_deck)
+            startup.pitch_deck = None
+        elif form.pitch_deck.data:
             if startup.pitch_deck:
                 delete_file_if_exists(startup.pitch_deck)
             startup.pitch_deck = save_file(form.pitch_deck.data, "pitch_decks")
 
-        if form.demo_video.data:
+        # Demo Video
+        if form.clear_demo_video.data and startup.demo_video:
+            delete_file_if_exists(startup.demo_video)
+            startup.demo_video = None
+        elif form.demo_video.data:
             if startup.demo_video:
                 delete_file_if_exists(startup.demo_video)
             startup.demo_video = save_file(form.demo_video.data, "demo_videos")
 
+        # --- Commit to DB ---
         try:
             db.session.commit()
             flash("✅ Startup profile saved successfully!", "success")
@@ -849,3 +892,5 @@ def mentor_profile_form():
         return redirect(url_for('routes.dashboard'))
 
     return render_template('mentor_profile_form.html', form=form)
+
+

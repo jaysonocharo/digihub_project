@@ -11,19 +11,28 @@
     <div class="row text-center mb-4">
         <div class="col-md-4">
             <div class="card shadow-sm p-3">
-                <h6>💸 Average Funding Needs</h6>
+                <h6>
+                    <i class="bi bi-cash-stack fs-1 text-success me-2"></i>
+                    <b>Average Funding Needs</b>
+                </h6>
                 <p class="lead">Ksh.{{ avg_funding_needs }}</p>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card shadow-sm p-3">
-                <h6>💰 Total Valuation</h6>
+                <h6>
+                    <i class="bi bi-piggy-bank-fill fs-1 text-primary me-2"></i>
+                    <b>Total Valuation</b>
+                </h6>
                 <p class="lead">Ksh.{{ total_valuation }}</p>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card shadow-sm p-3">
-                <h6>📍 Top Startup Locations</h6>
+                <h6>
+                    <i class="bi bi-geo-alt-fill fs-1 text-danger me-2"></i>
+                    <b>Top Startup Locations</b>
+                </h6>
                 <ul class="list-unstyled">
                     {% for location, count in top_locations.items() %}
                     <li>{{ location }}: {{ count }}</li>
@@ -50,7 +59,10 @@
 
     <!-- Top Matches -->
     <div class="table-container mt-4">
-        <h5>✅ Top 5 Strongest Matches</h5>
+        <h5>
+            <i class="bi bi-star-fill fs-1 text-warning me-2"></i>
+            <b>Top 5 Strongest Matches</b>
+        </h5>
         <table class="table table-bordered">
             <thead class="table-secondary">
                 <tr>
@@ -73,7 +85,7 @@
    
 
 
-<!--End of added content-->
+
 
     <!-- The container for the bar chart-->
     <div class="charts-container">
@@ -86,7 +98,7 @@
 
 
 <div class="alert alert-info text-center mt-4">
-    <h5><i class="bi bi-stars"></i> Total AI-Generated Matches:
+    <h5><i class="bi bi-stars"></i> <b>Total AI-Generated Matches:</b>
         <span class="badge bg-primary">{{ match_count }}</span>
     </h5>
 
