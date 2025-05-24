@@ -6,5 +6,5 @@ __pycache__/
 *.pyc
 *.pyo
 
-# Ignore database migration files (optional)
+# Ignore database migration files
 migrations/

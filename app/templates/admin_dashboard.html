@@ -42,20 +42,119 @@
         </div>
     </div>
 
-    <!-- Funding Stage Distribution Chart -->
-    <!-- <div class="charts-container mb-4">
-        <div class="chart-box">
-            <h5 class="text-center">🏷️ Funding Stage Distribution</h5>
-            <canvas id="fundingStageChart"></canvas>
-        </div>
-    </div>
 
-    <div class="charts-container mb-4">
-        <div class="chart-box">
-            <h5 class="text-center">📊 Investor Check Sizes</h5>
-            <canvas id="checkSizeChart"></canvas>
+
+
+
+        <!--Matching feedback beginning-->
+        <div class="list-group-item">
+            <h5><i class="bi bi-robot"></i> <strong>AI Matching Feedback</strong></h5>
+            <p><strong>Average Rating:</strong> {{ average_feedback_score }} / 5 (from {{ total_feedback }} users)</p>
+          
+            {% if recent_comments %}
+            <div class="list-group mt-3">
+              {% for comment in recent_comments[:5] %}
+                <div class="list-group-item">{{ comment }}</div>
+              {% endfor %}
+            </div>
+            {% else %}
+            <p>No user comments yet.</p>
+            {% endif %}
         </div>
-    </div> -->
+          
+
+        
+
+        
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <!-- Chart Container -->
+        <div class="container mt-4">
+        <div class="row justify-content-center">
+            
+            <!-- Sentiment Chart -->
+            <div class="col-md-6 mb-4">
+            <div class="card shadow-sm p-3">
+                <h5 class="text-center">Sentiment Analysis</h5>
+                <div style="position: relative; height: 300px;">
+                <canvas id="sentimentChart"></canvas>
+                </div>
+            </div>
+            </div>
+
+            <!-- Rating Chart -->
+            <div class="col-md-6 mb-4">
+            <div class="card shadow-sm p-3">
+                <h5 class="text-center">Rating Distribution</h5>
+                <div style="position: relative; height: 300px;">
+                <canvas id="ratingChart"></canvas>
+                </div>
+            </div>
+            </div>
+
+        </div>
+        </div>
+
+        
+        <script>
+        const sentimentData = {
+            labels: ["Positive", "Neutral", "Negative"],
+            datasets: [{
+                label: "Sentiment of Comments",
+                data: {{ [sentiment_counts['Positive'], sentiment_counts['Neutral'], sentiment_counts['Negative']] | tojson }},
+                backgroundColor: ["#198754", "#6c757d", "#dc3545"]
+            }]
+        };
+
+        const sentimentConfig = {
+            type: 'bar',
+            data: sentimentData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Sentiment of AI Match Feedback Comments'
+                    },
+                    legend: { display: false }
+                }
+            }
+        };
+
+        new Chart(document.getElementById("sentimentChart"), sentimentConfig);
+        </script>
+
+        <!-- Rating Chart Script -->
+        <script>
+        const ratingData = {
+            labels: ["1 ★", "2 ★", "3 ★", "4 ★", "5 ★"],
+            datasets: [{
+                label: "Rating Distribution",
+                data: {{ [rating_counts[1], rating_counts[2], rating_counts[3], rating_counts[4], rating_counts[5]] | tojson }},
+                backgroundColor: ["#dc3545", "#fd7e14", "#ffc107", "#0d6efd", "#198754"]
+            }]
+        };
+
+        const ratingConfig = {
+            type: 'pie',
+            data: ratingData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'AI Matching Feedback Rating Distribution'
+                    }
+                }
+            }
+        };
+
+        new Chart(document.getElementById("ratingChart"), ratingConfig);
+        </script>
+
 
     <!-- Top Matches -->
     <div class="table-container mt-4">
@@ -84,9 +183,6 @@
     </div>
    
 
-
-
-
     <!-- The container for the bar chart-->
     <div class="charts-container">
         <div class="chart-box">
@@ -94,7 +190,6 @@
         </div>
     </div>
 </div>
-
 
 
 <div class="alert alert-info text-center mt-4">
@@ -116,7 +211,6 @@
         <span class="badge bg-success">{{ high_quality_matches }}</span>
     </h6>
 </div>
-
 
 
 <!-- User Role Distribution Chart -->

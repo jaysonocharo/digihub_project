@@ -2,6 +2,8 @@ import os
 import uuid
 from werkzeug.utils import secure_filename
 from flask import current_app
+from app.models import Notification
+from app import db
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -20,19 +22,22 @@ def save_file(file_obj, subfolder="uploads"):
         return f'uploads/{subfolder}/{unique_filename}'.replace("\\", "/")
     return None
 
-
-
 def delete_file_if_exists(file_path):
     try:
         if isinstance(file_path, str):
             full_path = os.path.join(current_app.root_path, 'static', file_path.replace('\\', '/'))
             if os.path.exists(full_path):
                 os.remove(full_path)
-                print(f"🗑️ Deleted file at: {full_path}")
+                print(f" Deleted file at: {full_path}")
         else:
-            print("⚠️ Skipped deleting: file_path is not a string")
+            print(" Skipped deleting: file_path is not a string")
     except Exception as e:
         print("Error deleting file:", e)
+
+def send_notification(user_id, message, category='general'):
+    notification = Notification(user_id=user_id, message=message, category=category)
+    db.session.add(notification)
+    db.session.commit()
 
 
 

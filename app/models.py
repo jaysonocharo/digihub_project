@@ -114,6 +114,8 @@ class Notification(db.Model):
     message = db.Column(db.String(255), nullable=False)
     is_read = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    category = db.Column(db.String(50), default='general')  # e.g., 'match', 'comment', 'admin'
+
 
 
 class ActivityLog(db.Model):
@@ -144,4 +146,10 @@ class MentorshipRequest(db.Model):
     startup = db.relationship('Startup', backref='mentorship_requests')
     mentor = db.relationship('Mentor', backref='mentorship_requests')
 
+class MatchingFeedback(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    score = db.Column(db.Integer, nullable=True)  # 1 to 5
+    comment = db.Column(db.Text, nullable=True)
+    submitted_at = db.Column(db.DateTime, default=datetime.utcnow)
 

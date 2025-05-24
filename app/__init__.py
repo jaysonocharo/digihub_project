@@ -15,23 +15,17 @@ login_manager.login_view = 'routes.login'
 
 def create_app():
     app = Flask(__name__)
-
-    # Load configuration from Config class
     app.config.from_object(Config)
 
-    # Upload config
     import os
     UPLOAD_FOLDER = os.path.join(os.getcwd(), 'app', 'static', 'uploads')
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf', 'mp4', 'mov', 'doc', 'docx'}
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
     app.config['ALLOWED_EXTENSIONS'] = ALLOWED_EXTENSIONS
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
-
-    # Session config
     app.config['SESSION_PERMANENT'] = False
     app.config['SESSION_TYPE'] = "filesystem"
 
-    # Init extensions
     db.init_app(app)
     migrate.init_app(app, db)
     bcrypt.init_app(app)
@@ -42,5 +36,19 @@ def create_app():
 
     from app.routes import routes
     app.register_blueprint(routes)
+
+    @app.context_processor
+    def inject_notification_count():
+        from flask_login import current_user
+        from app.models import Notification
+        if current_user.is_authenticated:
+            try:
+                unread_count = Notification.query.filter_by(user_id=current_user.id, is_read=False).count()
+            except:
+                unread_count = 0  
+        else:
+            unread_count = 0
+        return dict(unread_count=unread_count)
+
 
     return app

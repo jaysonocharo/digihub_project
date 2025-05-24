@@ -1,24 +1,43 @@
 {% extends "base.html" %}
-
 {% block title %}Notifications - DIGIHUB{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
     <h2>Notifications</h2>
 
-    {% if notifications %}
+    {% if notifications.items %}
         <ul class="list-group mt-3">
-            {% for notification in notifications %}
-                <li class="list-group-item">
-                    {{ notification.message }} 
-                    <span class="text-muted">- {{ notification.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
-                </li>
+            {% for notification in notifications.items %}
+                <a href="{{ url_for('routes.mark_notification_read', notification_id=notification.id) }}" class="text-decoration-none text-dark">
+                    <li class="list-group-item d-flex justify-content-between align-items-start {% if not notification.is_read %}fw-bold{% endif %}">
+                        <div>
+                            {{ notification.message }}
+                            <div class="text-muted small">{{ notification.timestamp.strftime('%Y-%m-%d %H:%M') }}</div>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">{{ notification.category|capitalize }}</span>
+                    </li>
+                </a>
             {% endfor %}
         </ul>
+
+        <!-- Pagination -->
+        <nav class="mt-4">
+            <ul class="pagination">
+                {% if notifications.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('routes.notifications', page=notifications.prev_num) }}">Previous</a>
+                    </li>
+                {% endif %}
+                {% if notifications.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('routes.notifications', page=notifications.next_num) }}">Next</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+
     {% else %}
         <p class="text-muted mt-3">No notifications available.</p>
     {% endif %}
 </div>
 {% endblock %}
-
-

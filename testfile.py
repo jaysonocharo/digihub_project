@@ -4,10 +4,7 @@ from app.models import MentorshipRequest
 
 app = create_app()
 
-with app.app_context():
-    # sessions = MentorshipSession.query.all()
-    # print(sessions)
-    
+with app.app_context():  
     requests = MentorshipRequest.query.all()
     print(requests)
     

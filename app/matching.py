@@ -1,17 +1,19 @@
 import spacy
 from app.models import Startup, Investor
+from app.utils import send_notification
+
 
 nlp = spacy.load("en_core_web_md")
 
 def classify_score(score):
     if score >= 90:
-        return "🔥 Strong Match"
+        return "Strong Match"
     elif score >= 70:
-        return "✅ Good Match"
+        return "Good Match"
     elif score >= 50:
-        return "⚠️ Weak Match"
+        return "Weak Match"
     else:
-        return "❌ Unlikely Match"
+        return "Unlikely Match"
 
 def match_startups_to_investors():
     startups = Startup.query.all()
@@ -66,6 +68,11 @@ def match_startups_to_investors():
             similarity = doc_startup.similarity(doc_investor)
             score = round(similarity * 100, 2)
             tier = classify_score(score)
+
+            # Notify both parties of match
+            send_notification(startup.user_id, f"You've been matched with investor: {investor.firm_name}!", category='match')
+            send_notification(investor.user_id, f"New startup match: {startup.company_name}", category='match')
+
 
             matches.append({
                 'startup': startup,

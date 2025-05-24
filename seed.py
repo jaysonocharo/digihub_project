@@ -1,130 +1,236 @@
-from app import create_app, db, bcrypt
-from app.models import User, Startup, Investor
-from datetime import datetime
-import random
+from app import create_app, db
+from app.models import User
 
 app = create_app()
+app.app_context().push()
 
-def create_user(username, email, password, role):
-    if not User.query.filter_by(email=email).first():
-        user = User(
-            username=username,
-            email=email,
-            password=bcrypt.generate_password_hash(password).decode('utf-8'),
-            role=role,
-            approved=True
-        )
-        db.session.add(user)
-        db.session.commit()
-        return user
-    return None
+bios_by_id = {
+    4: "We are revolutionizing patient diagnostics with mobile labs and AI-assisted triage tools for rural clinics.",
+    5: "We design gamified e-learning platforms to keep students engaged, even in low-resource environments.",
+    6: "Our platform empowers farmers with weather insights and smart crop planning tools.",
+    7: "We connect smallholder farmers directly to buyers using blockchain to ensure fair pricing.",
+    8: "We develop wearable health monitors to track vitals in real-time and share them with care providers.",
+    9: "We offer micro-investment opportunities through mobile wallets to increase financial inclusion.",
+    10: "We're using drone tech to monitor soil health and optimize yields for medium-scale farms.",
+    11: "Our telemedicine platform brings affordable specialist care to underserved urban zones.",
+    12: "We simplify SME lending through AI-based risk profiling and a seamless mobile application process.",
+    45: "Perfect_startup is building Kenya’s first decentralized finance platform focused on youth-led businesses.",
+    46: "We develop AI tools for recycling management and carbon tracking for urban cities.",
+    47: "We help rural farmers switch to sustainable irrigation and provide real-time pest alerts via SMS.",
+    3: "Our e-commerce site specializes in made-in-Africa fashion, shipped nationwide within 48 hours.",
+    48: "We're improving maternal healthcare access by combining community health workers with mobile tools.",
+    41: "Our hybrid solar battery packs bring power to remote schools and clinics off the national grid.",
+    42: "We offer precision agriculture tech bundled with agribusiness mentorship for rural cooperatives.",
+    49: "We’re creating payment APIs for Africa’s informal sector, starting with local merchants.",
+    54: "We build AI models that localize content recommendations for regional media streaming platforms.",
+    55: "Our fintech tools help first-time investors manage risk and automate savings goals.",
+    56: "We digitize inventory and customer loyalty programs for small retail shops in emerging markets.",
+}
 
-def seed_real_investors():
-    investors = [
-        {
-            "username": "realinvestor1",
-            "email": "real_investor1@test.com",
-            "firm_name": "TLcom Capital",
-            "location": "Nairobi",
-            "check_size_min": 100000,
-            "check_size_max": 2000000,
-            "industry_focus": "FinTech",
-            "stage_focus": "Pre-Series A, Series A, Series B",
-            "investment_thesis": "We invest in high-growth African startups with scalable tech platforms in finance, education, and logistics.",
-            "deal_preferences": "Equity",
-            "portfolio": "Andela, Twiga Foods, uLesson",
-            "engagement_style": "Hands-on",
-            "past_exits": "Andela (partial exit)"
-        },
-        {
-            "username": "realinvestor2",
-            "email": "real_investor2@test.com",
-            "firm_name": "Novastar Ventures",
-            "location": "Nairobi",
-            "check_size_min": 50000,
-            "check_size_max": 1000000,
-            "industry_focus": "Clean Energy",
-            "stage_focus": "Seed, Series A",
-            "investment_thesis": "Backing mission-driven businesses that address basic needs in East Africa sustainably.",
-            "deal_preferences": "Equity",
-            "portfolio": "MoKo, M-KOPA, Sanergy",
-            "engagement_style": "Supportive",
-            "past_exits": "None disclosed"
-        },
-        {
-            "username": "realinvestor3",
-            "email": "real_investor3@test.com",
-            "firm_name": "Partech Africa",
-            "location": "Dakar / Nairobi",
-            "check_size_min": 200000,
-            "check_size_max": 5000000,
-            "industry_focus": "E-commerce & Retail",
-            "stage_focus": "Series A, Series B",
-            "investment_thesis": "We scale digital platforms reshaping retail, distribution, and logistics across the continent.",
-            "deal_preferences": "Equity",
-            "portfolio": "Yoco, TradeDepot, Wave",
-            "engagement_style": "Board-level strategy",
-            "past_exits": "2 undisclosed"
-        },
-        {
-            "username": "realinvestor4",
-            "email": "real_investor4@test.com",
-            "firm_name": "Shell Foundation",
-            "location": "London / Nairobi",
-            "check_size_min": 30000,
-            "check_size_max": 300000,
-            "industry_focus": "AgTech, CleanTech",
-            "stage_focus": "Seed, Series A",
-            "investment_thesis": "We support inclusive innovation improving energy access and agricultural livelihoods.",
-            "deal_preferences": "Grants, Equity",
-            "portfolio": "SunCulture, BURN, BioLite",
-            "engagement_style": "Impact-driven",
-            "past_exits": "-"
-        },
-        {
-            "username": "realinvestor5",
-            "email": "real_investor5@test.com",
-            "firm_name": "Anthemis Group",
-            "location": "London",
-            "check_size_min": 250000,
-            "check_size_max": 2000000,
-            "industry_focus": "FinTech, InsurTech",
-            "stage_focus": "Series A, Series B",
-            "investment_thesis": "Building the future of embedded finance by investing in agile and inclusive platforms.",
-            "deal_preferences": "Equity",
-            "portfolio": "Apollo Agriculture, Trov, Better",
-            "engagement_style": "Product advisory",
-            "past_exits": "2 successful IPOs"
-        }
-    ]
+# Update bios
+for user_id, bio_text in bios_by_id.items():
+    user = User.query.get(user_id)
+    if user:
+        user.bio = bio_text
+        print(f"Updated bio for user ID {user_id}")
+    else:
+        print(f"User ID {user_id} not found.")
 
-    for inv in investors:
-        user = create_user(inv["username"], inv["email"], "password123", "investor")
-        if user:
-            investor = Investor(
-                user_id=user.id,
-                firm_name=inv["firm_name"],
-                location=inv["location"],
-                check_size_min=inv["check_size_min"],
-                check_size_max=inv["check_size_max"],
-                industry_focus=inv["industry_focus"],
-                stage_focus=inv["stage_focus"],
-                investment_thesis=inv["investment_thesis"],
-                deal_preferences=inv["deal_preferences"],
-                portfolio=inv["portfolio"],
-                engagement_style=inv["engagement_style"],
-                past_exits=inv["past_exits"]
-            )
-            db.session.add(investor)
+# Commit changes
+db.session.commit()
+print("All specified bios updated.")
 
-def run():
-    with app.app_context():
-        seed_real_investors()
-        db.session.commit()
-        print("✅ 5 real Kenyan investors seeded.")
 
-if __name__ == "__main__":
-    run()
+
+
+
+
+
+
+
+
+
+
+
+# # #  UPDATED BIOS FOR REALSTARTUPS 1-10  ###
+# from app import create_app, db
+# from app.models import User
+
+# app = create_app()
+
+# def update_startup_bios():
+#     with app.app_context():
+#         # Map of usernames to their new bios
+#         bio_updates = {
+#             "realstartup1": "M-KOPA provides affordable solar energy systems and smartphone financing to off-grid communities through flexible pay-as-you-go mobile payments. Our IoT-enabled solutions have empowered over 1 million homes across Africa with clean energy and digital connectivity.",
+#             "realstartup2": "Wasoko is revolutionizing African retail by digitizing the supply chain for informal shops. Our platform offers just-in-time delivery of FMCG goods with embedded financing, helping over 50,000 retailers optimize inventory and grow their businesses.",
+#             "realstartup3": "Twiga connects smallholder farmers directly to urban retailers through our tech-driven food distribution platform. We reduce post-harvest losses by 30% while ensuring fair prices for farmers and fresh produce for vendors across Kenya.",
+#             "realstartup4": "MoKo designs and manufactures high-quality, affordable furniture for African homes. By cutting out middlemen and offering flexible payment plans, we make stylish home furnishings accessible to Kenya's growing middle class.",
+#             "realstartup5": "SunCulture's solar-powered irrigation systems help smallholder farmers increase yields by 300%. Our bundled solutions combine solar tech, drip irrigation, and pay-as-you-go financing to combat climate change impacts on agriculture.",
+#             "realstartup6": "Apollo uses AI and satellite data to provide smallholder farmers with customized agronomic advice, quality inputs, and credit. Our technology helps farmers optimize their operations and double their productivity.",
+#             "realstartup7": "KOKO operates Africa's largest network of bioethanol fuel ATMs, providing clean cooking solutions to urban households. Our smart cookstoves and fuel distribution system reduce indoor air pollution while saving families money.",
+#             "realstartup8": "Sendy's tech platform connects businesses to vetted delivery providers across East Africa. We simplify logistics with real-time tracking, transparent pricing, and API integrations for e-commerce platforms.",
+#             "realstartup9": "Lami is building Africa's digital insurance infrastructure. Our API-first platform enables any business to easily create, distribute, and manage insurance products tailored to their customers' needs.",
+#             "realstartup10": "Pezesha provides embedded finance solutions for Africa's underserved SMEs. Our credit scoring platform connects small businesses to affordable working capital through partnerships with financial institutions."
+#         }
+
+#         success_count = 0
+#         for username, new_bio in bio_updates.items():
+#             user = User.query.filter_by(username=username).first()
+#             if user:
+#                 user.bio = new_bio
+#                 print(f"✓ Updated bio for {username}")
+#                 success_count += 1
+#             else:
+#                 print(f"✗ User {username} not found, skipping")
+
+#         try:
+#             db.session.commit()
+#             print(f"\n✅ Successfully updated {success_count}/10 bios")
+#             print("Changes committed to database.")
+#         except Exception as e:
+#             db.session.rollback()
+#             print(f"\n❌ Error updating bios: {str(e)}")
+#             print("Changes rolled back.")
+
+# if __name__ == "__main__":
+#     update_startup_bios()
+
+
+
+
+
+
+
+ ####  SEEDED 10 REALISTIC STARTUPS ###
+
+# from app import create_app, db, bcrypt
+# from app.models import User, Startup, Investor
+# from datetime import datetime
+# import random
+
+# app = create_app()
+
+# def create_user(username, email, password, role):
+#     if not User.query.filter_by(email=email).first():
+#         user = User(
+#             username=username,
+#             email=email,
+#             password=bcrypt.generate_password_hash(password).decode('utf-8'),
+#             role=role,
+#             approved=True
+#         )
+#         db.session.add(user)
+#         db.session.commit()
+#         return user
+#     return None
+
+# def seed_real_investors():
+#     investors = [
+#         {
+#             "username": "realinvestor1",
+#             "email": "real_investor1@test.com",
+#             "firm_name": "TLcom Capital",
+#             "location": "Nairobi",
+#             "check_size_min": 100000,
+#             "check_size_max": 2000000,
+#             "industry_focus": "FinTech",
+#             "stage_focus": "Pre-Series A, Series A, Series B",
+#             "investment_thesis": "We invest in high-growth African startups with scalable tech platforms in finance, education, and logistics.",
+#             "deal_preferences": "Equity",
+#             "portfolio": "Andela, Twiga Foods, uLesson",
+#             "engagement_style": "Hands-on",
+#             "past_exits": "Andela (partial exit)"
+#         },
+#         {
+#             "username": "realinvestor2",
+#             "email": "real_investor2@test.com",
+#             "firm_name": "Novastar Ventures",
+#             "location": "Nairobi",
+#             "check_size_min": 50000,
+#             "check_size_max": 1000000,
+#             "industry_focus": "Clean Energy",
+#             "stage_focus": "Seed, Series A",
+#             "investment_thesis": "Backing mission-driven businesses that address basic needs in East Africa sustainably.",
+#             "deal_preferences": "Equity",
+#             "portfolio": "MoKo, M-KOPA, Sanergy",
+#             "engagement_style": "Supportive",
+#             "past_exits": "None disclosed"
+#         },
+#         {
+#             "username": "realinvestor3",
+#             "email": "real_investor3@test.com",
+#             "firm_name": "Partech Africa",
+#             "location": "Dakar / Nairobi",
+#             "check_size_min": 200000,
+#             "check_size_max": 5000000,
+#             "industry_focus": "E-commerce & Retail",
+#             "stage_focus": "Series A, Series B",
+#             "investment_thesis": "We scale digital platforms reshaping retail, distribution, and logistics across the continent.",
+#             "deal_preferences": "Equity",
+#             "portfolio": "Yoco, TradeDepot, Wave",
+#             "engagement_style": "Board-level strategy",
+#             "past_exits": "2 undisclosed"
+#         },
+#         {
+#             "username": "realinvestor4",
+#             "email": "real_investor4@test.com",
+#             "firm_name": "Shell Foundation",
+#             "location": "London / Nairobi",
+#             "check_size_min": 30000,
+#             "check_size_max": 300000,
+#             "industry_focus": "AgTech, CleanTech",
+#             "stage_focus": "Seed, Series A",
+#             "investment_thesis": "We support inclusive innovation improving energy access and agricultural livelihoods.",
+#             "deal_preferences": "Grants, Equity",
+#             "portfolio": "SunCulture, BURN, BioLite",
+#             "engagement_style": "Impact-driven",
+#             "past_exits": "-"
+#         },
+#         {
+#             "username": "realinvestor5",
+#             "email": "real_investor5@test.com",
+#             "firm_name": "Anthemis Group",
+#             "location": "London",
+#             "check_size_min": 250000,
+#             "check_size_max": 2000000,
+#             "industry_focus": "FinTech, InsurTech",
+#             "stage_focus": "Series A, Series B",
+#             "investment_thesis": "Building the future of embedded finance by investing in agile and inclusive platforms.",
+#             "deal_preferences": "Equity",
+#             "portfolio": "Apollo Agriculture, Trov, Better",
+#             "engagement_style": "Product advisory",
+#             "past_exits": "2 successful IPOs"
+#         }
+#     ]
+
+#     for inv in investors:
+#         user = create_user(inv["username"], inv["email"], "password123", "investor")
+#         if user:
+#             investor = Investor(
+#                 user_id=user.id,
+#                 firm_name=inv["firm_name"],
+#                 location=inv["location"],
+#                 check_size_min=inv["check_size_min"],
+#                 check_size_max=inv["check_size_max"],
+#                 industry_focus=inv["industry_focus"],
+#                 stage_focus=inv["stage_focus"],
+#                 investment_thesis=inv["investment_thesis"],
+#                 deal_preferences=inv["deal_preferences"],
+#                 portfolio=inv["portfolio"],
+#                 engagement_style=inv["engagement_style"],
+#                 past_exits=inv["past_exits"]
+#             )
+#             db.session.add(investor)
+
+# def run():
+#     with app.app_context():
+#         seed_real_investors()
+#         db.session.commit()
+#         print("✅ 5 real Kenyan investors seeded.")
+
+# if __name__ == "__main__":
+#     run()
 
 
 

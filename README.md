@@ -4,14 +4,14 @@
 DIGIHUB is a web-based platform designed to connect Kenyan startups, investors, mentors, and government innovation programs. The platform facilitates mentorship, investor-startup matching, and administrative oversight.
 
 ## **Features**
-✅ User Authentication & Role-Based Access (Startup, Investor, Mentor, Admin)  
-✅ Startup Registration & Profile Management  
-✅ Investor-Startup Matching System  
-✅ Mentorship Scheduling & Approvals  
-✅ Admin Dashboard for User Management  
-✅ In-App Notifications  
-✅ Search & Filtering System  
-✅ Activity Logs for Admins  
+  User Authentication & Role-Based Access (Startup, Investor, Mentor, Admin)  
+  Startup Registration & Profile Management  
+  Investor-Startup Matching System  
+  Mentorship Scheduling & Approvals  
+  Admin Dashboard for User Management  
+  In-App Notifications  
+  Search & Filtering System  
+ Activity Logs for Admins  
 
 ---
 
@@ -110,14 +110,14 @@ Alternatively, deploy on **PythonAnywhere** or **Heroku** following their Flask 
 
 ## **Troubleshooting**
 ### **Common Issues & Fixes**
-❌ *Flask-Migrate error (`no such command 'db'`)*  
-✅ Ensure `flask_migrate` is installed and `Migrate(app, db)` is initialized in `__init__.py`.
+  *Flask-Migrate error (`no such command 'db'`)*  
+  Ensure `flask_migrate` is installed and `Migrate(app, db)` is initialized in `__init__.py`.
 
-❌ *Virtual Environment Activation Fails*  
-✅ Use `source venv/bin/activate` (Linux/macOS) or `venv\Scripts\activate` (Windows).
+  *Virtual Environment Activation Fails*  
+  Use `source venv/bin/activate` (Linux/macOS) or `venv\Scripts\activate` (Windows).
 
-❌ *Static files (CSS, JS, Images) not loading*  
-✅ Make sure the `url_for('static', filename='path/to/file')` is correctly referenced in templates.
+  *Static files (CSS, JS, Images) not loading*  
+  Make sure the `url_for('static', filename='path/to/file')` is correctly referenced in templates.
 
 ---
 
@@ -132,5 +132,5 @@ This project is licensed under the MIT License. Feel free to contribute and impr
 
 ---
 
-🚀 **DIGIHUB - Empowering Startups in Kenya!**
+ **DIGIHUB - Empowering Startups in Kenya!**
 

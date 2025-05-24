@@ -166,3 +166,9 @@ class MentorForm(FlaskForm):
     mentorship_topics = TextAreaField('Preferred Mentorship Topics')
     availability = StringField('General Availability')
     submit = SubmitField('Update Profile')
+
+
+class MatchingFeedbackForm(FlaskForm):
+    score = IntegerField('How would you rate your matches? (1-5)', validators=[DataRequired(), NumberRange(min=1, max=5)])
+    comment = TextAreaField('Any feedback or suggestions?', validators=[Optional(), Length(min=5)])
+    submit = SubmitField('Submit Feedback')

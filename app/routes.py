@@ -1,34 +1,26 @@
 from flask import render_template, url_for, flash, redirect, request, abort, Blueprint, session
 from app import db, bcrypt
 from flask_login import login_user, logout_user, login_required, current_user
-
-
-from app.models import Startup, Investor
+from app.models import Startup, Investor, Notification
 from app.utils import save_file
-
-routes = Blueprint("routes", __name__)
-
-
-from app.forms import RegistrationForm, LoginForm, MentorshipForm, SearchForm, EditProfileForm, InvestorForm, StartupForm, MentorForm
+from app.forms import RegistrationForm, LoginForm, MentorshipForm, SearchForm, EditProfileForm, InvestorForm, StartupForm, MentorForm, MatchingFeedbackForm
 from datetime import datetime
-from app.models import User, MentorshipSession, ActivityLog, Startup, Investor, db, MentorshipRequest, Mentor
+from app.models import User, MentorshipSession, ActivityLog, Startup, Investor, db, MentorshipRequest, Mentor, MatchingFeedback
 from app.decorators import role_required
 from app.matching import match_startups_to_investors
-from app.utils import save_file, delete_file_if_exists
-
-
+from app.utils import save_file, delete_file_if_exists, send_notification
 from collections import defaultdict
+from textblob import TextBlob
+routes = Blueprint("routes", __name__)
 
 @routes.route("/")
 def home():
     return render_template("home.html")  
 
-  
 @routes.route("/register", methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
-        # Check for duplicate email
         existing_user = User.query.filter_by(email=form.email.data).first()
         if existing_user:
             flash(' That email is already registered. Try logging in or resetting your password.', 'danger')
@@ -36,7 +28,7 @@ def register():
 
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
 
-        # First admin gets auto-approved
+        # For first admin to be auto-approved
         is_first_admin = form.role.data == 'admin' and not User.query.filter_by(role='admin').first()
         user = User(
             username=form.username.data,
@@ -52,7 +44,6 @@ def register():
         return redirect(url_for('routes.login'))
 
     return render_template('register.html', form=form)
-
 
 
 @routes.route("/login", methods=['GET', 'POST'])
@@ -90,7 +81,6 @@ def dashboard():
                 "industry": startup.industry,
                 "profile_link": url_for('routes.view_startup', startup_id=startup.id)
             }
-            # Fetch mentorship requests made by this startup
             mentorship_requests = MentorshipRequest.query.filter_by(startup_id=startup.id).all()
 
     return render_template(
@@ -99,8 +89,6 @@ def dashboard():
         startup_info=startup_info,
         mentorship_requests=mentorship_requests
     )
-
-
 
 
 @routes.route("/logout")
@@ -179,7 +167,7 @@ def matches():
         startup = match['startup']
         investor = match['investor']
         score = match['score']
-        reasons = match.get('reasons', [])  # optional reasons from AI logic
+        reasons = match.get('reasons', [])  
 
         # Filter to only strong matches
         if score >= 70:
@@ -236,7 +224,6 @@ def mentor_sessions():
     return render_template('mentor_sessions.html', requests=requests)
 
 
-
 @routes.route("/approve_session/<int:session_id>")
 @login_required
 def approve_session(session_id):
@@ -269,18 +256,11 @@ def reject_session(session_id):
 
 
 
-from app.models import Notification
-
-def send_notification(user_id, message):
-    notification = Notification(user_id=user_id, message=message)
-    db.session.add(notification)
-    db.session.commit()
-
-
 @routes.route("/notifications")
 @login_required
 def notifications():
-    user_notifications = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.timestamp.desc()).all()
+    page = request.args.get('page', 1, type=int)
+    user_notifications = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.timestamp.desc()).paginate(page=page, per_page=10)
     return render_template('notifications.html', notifications=user_notifications)
 
 
@@ -306,60 +286,6 @@ def search():
     return render_template('search.html', form=form, results=results)
 
 
-
-# @routes.route("/admin_dashboard")
-# @login_required
-# def admin_dashboard():
-#     if current_user.role != 'admin':
-#         abort(403)
-
-#     users = User.query.all()
-#     startups = User.query.filter_by(role='startup').count()
-#     investors = User.query.filter_by(role='investor').count()
-#     mentors = User.query.filter_by(role='mentor').count()
-#     admins = User.query.filter_by(role='admin').count()
-
-#     matches = match_startups_to_investors()
-#     match_count = len(matches)
-#     average_score = round(sum(m['score'] for m in matches) / match_count, 2) if matches else 0
-#     high_quality_matches = sum(1 for m in matches if m['score'] >= 70)
-
-#     # Buckets for the pie chart
-#     score_ranges = {
-#         '0-30': 0,
-#         '31-50': 0,
-#         '51-70': 0,
-#         '71-90': 0,
-#         '91-100': 0
-#     }
-
-#     for match in matches:
-#         score = match['score']
-#         if score <= 30:
-#             score_ranges['0-30'] += 1
-#         elif score <= 50:
-#             score_ranges['31-50'] += 1
-#         elif score <= 70:
-#             score_ranges['51-70'] += 1
-#         elif score <= 90:
-#             score_ranges['71-90'] += 1
-#         else:
-#             score_ranges['91-100'] += 1
-
-#     return render_template(
-#         'admin_dashboard.html',
-#         users=users,
-#         startups=startups,
-#         investors=investors,
-#         mentors=mentors,
-#         admins=admins,
-#         match_count=match_count,
-#         average_score=average_score,
-#         high_quality_matches=high_quality_matches,
-#         score_ranges=score_ranges
-#     )
-
-
 @routes.route("/admin_dashboard")
 @login_required
 def admin_dashboard():
@@ -374,11 +300,13 @@ def admin_dashboard():
     investors = investors_query.count()
     mentors = User.query.filter_by(role='mentor').count()
     admins = User.query.filter_by(role='admin').count()
+    feedbacks = MatchingFeedback.query.all()
 
     matches = match_startups_to_investors()
     match_count = len(matches)
     average_score = round(sum(m['score'] for m in matches) / match_count, 2) if matches else 0
     high_quality_matches = sum(1 for m in matches if m['score'] >= 70)
+    
 
     # Match score ranges
     score_ranges = {'0-30': 0, '31-50': 0, '51-70': 0, '71-90': 0, '91-100': 0}
@@ -398,33 +326,50 @@ def admin_dashboard():
     # Access related startup/investor profiles
     startup_profiles = [s.startup for s in startups_query if s.startup]
     investor_profiles = [i.investor for i in investors_query if i.investor]
-
-    # 💸 Average Funding Needs
+    # Average Funding Needs
     funding_values = [s.funding_needed for s in startup_profiles if s.funding_needed]
     avg_funding_needs = round(sum(funding_values) / len(funding_values), 2) if funding_values else 0
-
-    # 💰 Total Valuation
+    # Total Valuation
     valuation_values = [s.valuation for s in startup_profiles if s.valuation]
     total_valuation = round(sum(valuation_values), 2)
-
-    # 📍 Top Startup Locations
+    # Top Startup Locations
     from collections import Counter
     location_counts = Counter([s.location for s in startup_profiles if s.location])
     top_locations = dict(location_counts.most_common(5))
-
-    # 📊 Investor Check Size Histogram (average min/max)
+    # Investor Check Size Histogram (average min/max)
     check_size_data = [
         (inv.check_size_min + inv.check_size_max) / 2
         for inv in investor_profiles
         if inv.check_size_min and inv.check_size_max
     ]
 
-    # 🏷️ Funding Stage Distribution
+    # Funding Stage Distribution
     stage_counts = Counter([s.stage for s in startup_profiles if s.stage])
     funding_stage_data = dict(stage_counts)
-
-    # ✅ Top 5 Strongest Matches
+    # Top 5 Strongest Matches
     top_matches = sorted(matches, key=lambda x: x['score'], reverse=True)[:5]
+    # Rating distribution
+    rating_counts = {i: 0 for i in range(1, 6)}
+    for fb in feedbacks:
+        if fb.score:
+            rating_counts[fb.score] += 1
+    # Sentiment analysis
+    sentiment_counts = {'Positive': 0, 'Neutral': 0, 'Negative': 0}
+    for fb in feedbacks:
+        if fb.comment:
+            blob = TextBlob(fb.comment)
+            polarity = blob.sentiment.polarity
+            if polarity > 0.1:
+                sentiment_counts['Positive'] += 1
+            elif polarity < -0.1:
+                sentiment_counts['Negative'] += 1
+            else:
+                sentiment_counts['Neutral'] += 1
+    # Matching_feedback
+    feedbacks = MatchingFeedback.query.all()
+    average_feedback_score = round(sum(f.score for f in feedbacks) / len(feedbacks), 2) if feedbacks else 0
+    total_feedback = len(feedbacks)
+    recent_comments = [f.comment for f in feedbacks if f.comment]
 
     return render_template(
         'admin_dashboard.html',
@@ -442,7 +387,12 @@ def admin_dashboard():
         top_locations=top_locations,
         check_size_data=check_size_data,
         top_matches=top_matches,
-        funding_stage_data=funding_stage_data
+        funding_stage_data=funding_stage_data,
+        average_feedback_score=average_feedback_score,
+        total_feedback=total_feedback,
+        recent_comments=recent_comments,
+        rating_counts=rating_counts,
+        sentiment_counts=sentiment_counts,
     )
 
 
@@ -456,11 +406,12 @@ def approve_user(user_id):
     user.approved = True
     db.session.commit()
 
+    send_notification(user.id, "Your profile has been approved by the DIGIHUB team.", category='system')
+
     log_action(current_user.id, f"Approved user {user.username}", user.id)
 
     flash(f'User {user.username} has been approved.', 'success')
     return redirect(url_for('routes.admin_dashboard'))
-
 
 
 @routes.route("/ban_user/<int:user_id>")
@@ -510,7 +461,6 @@ def activity_logs():
     return render_template('activity_log.html', logs=logs)
 
 
-
 @routes.route('/investor/startups', methods=['GET'])
 @login_required
 def investor_startups():
@@ -535,7 +485,6 @@ def investor_startups():
 
     startups = query.all()
 
-    # Distinct values for dropdowns
     industries = [i[0] for i in db.session.query(Startup.industry).distinct().all() if i[0]]
     stages = [s[0] for s in db.session.query(Startup.stage).distinct().all() if s[0]]
     locations = [l[0] for l in db.session.query(Startup.location).distinct().all() if l[0]]
@@ -551,7 +500,6 @@ def investor_startups():
         selected_location=selected_location
     )
 
-
 @routes.route('/startup/<int:startup_id>')
 @login_required
 def view_startup(startup_id):
@@ -562,14 +510,10 @@ def view_startup(startup_id):
 
     return render_template('startup_profile.html', user=startup.user, startup=startup)
 
-
-
 @routes.route('/startups')
 def startups():
     startups = Startup.query.all()
     return render_template('startups.html', startups=startups)
-
-
 
 @routes.route("/investor_form", methods=['GET', 'POST'])
 @login_required
@@ -637,14 +581,14 @@ def startup_form():
     startup = Startup.query.filter_by(user_id=current_user.id).first()
 
     if form.validate_on_submit():
-        print("✅ Form validated!")
+        print("Form validated!")
 
         # Create startup if not exists
         if not startup:
             startup = Startup(user_id=current_user.id)
             db.session.add(startup)
 
-        # --- Manually assign all fields (excluding files) ---
+        # -- Assigns all fields (excluding files)
         startup.company_name = form.company_name.data
         startup.industry = form.industry.data
         startup.location = form.location.data
@@ -671,7 +615,7 @@ def startup_form():
         startup.social_links = form.social_links.data
         startup.description = form.description.data
 
-        # --- Contact & Social Link Formatting ---
+        # -- Contact & Social Link Formatting for validation
         def format_social_link(base_url, value):
             if not value:
                 return None
@@ -691,7 +635,7 @@ def startup_form():
         startup.twitter_x = format_social_link("https://twitter.com/", form.twitter_x.data)
         startup.linkedin = format_social_link("https://linkedin.com/in/", form.linkedin.data)
 
-        # --- File Management ---
+        # FILE MANAGEMENT(logo, pitch deck, demonstration video)
 
         # Logo
         if form.clear_logo.data and startup.logo:
@@ -701,6 +645,7 @@ def startup_form():
             if startup.logo:
                 delete_file_if_exists(startup.logo)
             startup.logo = save_file(form.logo.data, "logos")
+            send_notification(current_user.id, "Your logo was uploaded successfully.", category='media')
 
         # Pitch Deck
         if form.clear_pitch_deck.data and startup.pitch_deck:
@@ -710,6 +655,7 @@ def startup_form():
             if startup.pitch_deck:
                 delete_file_if_exists(startup.pitch_deck)
             startup.pitch_deck = save_file(form.pitch_deck.data, "pitch_decks")
+            send_notification(current_user.id, "Your pitch deck was uploaded successfully.", category='media')
 
         # Demo Video
         if form.clear_demo_video.data and startup.demo_video:
@@ -719,19 +665,19 @@ def startup_form():
             if startup.demo_video:
                 delete_file_if_exists(startup.demo_video)
             startup.demo_video = save_file(form.demo_video.data, "demo_videos")
+            send_notification(current_user.id, " Your demo video was uploaded successfully.", category='media')
 
-        # --- Commit to DB ---
         try:
             db.session.commit()
-            flash("✅ Startup profile saved successfully!", "success")
+            flash("Startup profile saved successfully!", "success")
             return redirect(url_for('routes.dashboard'))
         except Exception as e:
             db.session.rollback()
-            print("🔥 DB Commit Error:", e)
+            print(" DB Commit Error:", e)
             flash("An error occurred while saving your data. Please try again.", "danger")
 
     elif request.method == 'POST':
-        print("❌ Validation failed:", form.errors)
+        print(" Validation failed:", form.errors)
 
     # Pre-fill values for GET request
     if request.method == 'GET' and startup:
@@ -742,11 +688,9 @@ def startup_form():
     return render_template("startup_form.html", form=form, startup=startup)
 
 
-################## MENTOR#############
+############# MENTOR #############
 import spacy
 nlp = spacy.load("en_core_web_md")
-
-
 
 @routes.route('/mentor_profile/<int:mentor_id>')
 @login_required
@@ -797,9 +741,6 @@ def recommended_mentors():
     return render_template('recommended_mentors.html', matches=top_matches)
 
 
-
-
-
 from datetime import datetime
 from flask import request, redirect, flash
 
@@ -829,7 +770,6 @@ def request_mentorship(mentor_id):
     return render_template('request_mentorship.html', mentor=mentor)
 
 
-
 @routes.route('/manage_requests')
 @login_required
 def manage_requests():
@@ -839,13 +779,11 @@ def manage_requests():
     requests = MentorshipRequest.query.filter_by(mentor_id=mentor.id).all()
     return render_template('manage_requests.html', requests=requests)
 
-
 @routes.route('/update_request/<int:request_id>/<action>')
 @login_required
 def update_request(request_id, action):
     req = MentorshipRequest.query.get_or_404(request_id)
 
-    # Ensure only the mentor can update this request
     if current_user.role != 'mentor' or current_user.mentor.id != req.mentor_id:
         abort(403)
 
@@ -857,20 +795,13 @@ def update_request(request_id, action):
         message = f"Your mentorship request for {req.request_date} at {req.request_time.strftime('%H:%M')} was rejected."
     else:
         abort(400)
-
     db.session.commit()
 
     # Notify the startup user
-    notif = Notification(
-        user_id=req.startup.user_id,
-        message=message
-    )
-    db.session.add(notif)
-    db.session.commit()
+    send_notification(req.startup.user_id, message, category='mentorship')
 
     flash(f"Request has been {req.status.lower()} and startup notified.")
     return redirect(url_for('routes.mentor_sessions'))
-
 
 @routes.route('/mentor_profile_form', methods=['GET', 'POST'])
 @login_required
@@ -892,5 +823,34 @@ def mentor_profile_form():
         return redirect(url_for('routes.dashboard'))
 
     return render_template('mentor_profile_form.html', form=form)
+
+
+@routes.route('/match_feedback', methods=['GET', 'POST'])
+@login_required
+def match_feedback():
+    form = MatchingFeedbackForm()
+    if form.validate_on_submit():
+        feedback = MatchingFeedback(
+            user_id=current_user.id,
+            score=form.score.data,
+            comment=form.comment.data
+        )
+        db.session.add(feedback)
+        db.session.commit()
+        flash("Thank you for your feedback on the matching system!", "success")
+        return redirect(url_for('routes.matches'))
+    return render_template('match_feedback.html', form=form)
+
+### NOTIFICATIONS ###
+@routes.route("/notifications/mark_read/<int:notification_id>")
+@login_required
+def mark_notification_read(notification_id):
+    notification = Notification.query.get_or_404(notification_id)
+    if notification.user_id != current_user.id:
+        abort(403)
+    notification.is_read = True
+    db.session.commit()
+    return redirect(url_for('routes.notifications'))
+
 
 
