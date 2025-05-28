@@ -1,44 +1,225 @@
 from app import create_app, db
-from app.models import User
+from app.models import User, Startup
+from datetime import datetime
 
 app = create_app()
-app.app_context().push()
 
-bios_by_id = {
-    4: "We are revolutionizing patient diagnostics with mobile labs and AI-assisted triage tools for rural clinics.",
-    5: "We design gamified e-learning platforms to keep students engaged, even in low-resource environments.",
-    6: "Our platform empowers farmers with weather insights and smart crop planning tools.",
-    7: "We connect smallholder farmers directly to buyers using blockchain to ensure fair pricing.",
-    8: "We develop wearable health monitors to track vitals in real-time and share them with care providers.",
-    9: "We offer micro-investment opportunities through mobile wallets to increase financial inclusion.",
-    10: "We're using drone tech to monitor soil health and optimize yields for medium-scale farms.",
-    11: "Our telemedicine platform brings affordable specialist care to underserved urban zones.",
-    12: "We simplify SME lending through AI-based risk profiling and a seamless mobile application process.",
-    45: "Perfect_startup is building Kenya’s first decentralized finance platform focused on youth-led businesses.",
-    46: "We develop AI tools for recycling management and carbon tracking for urban cities.",
-    47: "We help rural farmers switch to sustainable irrigation and provide real-time pest alerts via SMS.",
-    3: "Our e-commerce site specializes in made-in-Africa fashion, shipped nationwide within 48 hours.",
-    48: "We're improving maternal healthcare access by combining community health workers with mobile tools.",
-    41: "Our hybrid solar battery packs bring power to remote schools and clinics off the national grid.",
-    42: "We offer precision agriculture tech bundled with agribusiness mentorship for rural cooperatives.",
-    49: "We’re creating payment APIs for Africa’s informal sector, starting with local merchants.",
-    54: "We build AI models that localize content recommendations for regional media streaming platforms.",
-    55: "Our fintech tools help first-time investors manage risk and automate savings goals.",
-    56: "We digitize inventory and customer loyalty programs for small retail shops in emerging markets.",
-}
+def seed_lipalink():
+    user = User.query.filter_by(email='lipalink@test.com').first()
+    if not user:
+        print("❌ LipaLink user does not exist. Please create the user first.")
+        return
 
-# Update bios
-for user_id, bio_text in bios_by_id.items():
-    user = User.query.get(user_id)
-    if user:
-        user.bio = bio_text
-        print(f"Updated bio for user ID {user_id}")
-    else:
-        print(f"User ID {user_id} not found.")
+    startup = Startup.query.filter_by(user_id=user.id).first()
+    if startup:
+        print("⚠️ LipaLink startup already exists.")
+        return
 
-# Commit changes
-db.session.commit()
-print("All specified bios updated.")
+    # LipaLink startup data
+    startup = Startup(
+        user_id=user.id,
+        company_name='LipaLink',
+        industry='FinTech',
+        location='Nairobi',
+        funding_needed=500000,
+        valuation=2500000,
+        stage='Pre-Series A',
+        mrr=12000,
+        revenue=70000,
+        user_growth=20,
+        partnerships='Flutterwave, ChipperCash',
+        tech_stack='Node.js, PostgreSQL, Stripe API',
+        competitive_advantage='Unified API for African wallet & bank payments',
+        revenue_streams='Transaction fees, API subscriptions',
+        pricing_strategy='Tiered pricing based on volume',
+        founding_date=datetime(2021, 3, 20),
+        logo='static/uploads/logos/lipalink_logo.png',
+        pitch_deck='static/uploads/pitch_decks/lipalink_pitch.pdf',
+        demo_video='static/uploads/demo_videos/lipalink_demo.mp4',
+    )
+
+    db.session.add(startup)
+    db.session.commit()
+    print("✅ LipaLink startup seeded successfully.")
+
+if __name__ == '__main__':
+    with app.app_context():
+        seed_lipalink()
+
+
+# from app import create_app, db
+# from app.models import MatchingFeedback, User
+# from datetime import datetime
+
+# app = create_app()
+# app.app_context().push()
+
+# # 10 Realistic AI Match Feedback Comments
+# feedback_data = [
+#     ("I was impressed by how well the AI matched me with investors who actually align with our mission.", 5),
+#     ("The matching system saved us weeks of cold outreach. Very smart and effective!", 5),
+#     ("Finally a platform that understands sector-fit — the AI recommended relevant investors in AgriTech.", 5),
+#     ("Some matches looked promising, though I wish the AI explained *why* those investors were picked.", 3),
+#     ("I think the system is on the right track but a little more filtering by check size would help.", 3),
+#     ("The tool works, but I’d love to see investors ranked by interest level or engagement history.", 3),
+#     ("The matches didn’t seem aligned with our industry at all. Maybe something went wrong?", 2),
+#     ("Most investors recommended were outside our funding stage or geography.", 2),
+#     ("It would be helpful if the AI could learn from startups I interact with and adjust suggestions.", 4),
+#     ("I'd like to see more transparency on how the match scores are calculated. A breakdown would help.", 4)
+# ]
+
+# # Query all investor users
+# investors = User.query.filter_by(role='investor').all()
+
+# if not investors:
+#     print("❌ No investors found in the database. Seed investors first.")
+# else:
+#     print(f"✅ Found {len(investors)} investors. Seeding feedback...")
+
+#     for i, (comment, score) in enumerate(feedback_data):
+#         investor = investors[i % len(investors)]  # Rotate through available investors
+#         feedback = MatchingFeedback(
+#             user_id=investor.id,
+#             score=score,
+#             comment=comment,
+#             submitted_at=datetime.utcnow()
+#         )
+#         db.session.add(feedback)
+#         print(f"Added feedback from investor ID {investor.id}: '{comment[:60]}...'")
+
+#     db.session.commit()
+#     print("✅ All 10 feedback comments seeded successfully.")
+
+
+
+# from app import create_app, db, bcrypt
+# from app.models import User, Startup
+# from datetime import datetime
+
+# app = create_app()
+
+# def create_user(username, email, password, role, bio):
+#     if not User.query.filter_by(email=email).first():
+#         user = User(
+#             username=username,
+#             email=email,
+#             password=bcrypt.generate_password_hash(password).decode('utf-8'),
+#             role=role,
+#             approved=True,
+#             bio=bio
+#         )
+#         db.session.add(user)
+#         db.session.commit()
+#         return user
+#     return None
+
+# def seed_tlcom_startups():
+#     data = [
+#         {
+#             'username': 'lipalink',
+#             'email': 'lipalink@test.com',
+#             'company': 'LipaLink',
+#             'industry': 'FinTech',
+#             'location': 'Nairobi',
+#             'funding': 500000,
+#             'valuation': 2500000,
+#             'stage': 'Pre-Series A',
+#             'mrr': 12000,
+#             'revenue': 70000,
+#             'user_growth': 20,
+#             'partnerships': 'Flutterwave, ChipperCash',
+#             'tech_stack': 'Node.js, PostgreSQL, Stripe API',
+#             'advantage': 'Unified API for African wallet & bank payments',
+#             'revenue_streams': 'Transaction fees, API subscriptions',
+#             'pricing_strategy': 'Tiered pricing based on volume',
+#             'date': datetime(2021, 3, 20),
+#             'logo': 'static/uploads/logos/lipalink_logo.png',
+#             'deck': 'static/uploads/pitch_decks/lipalink_pitch.pdf',
+#             'video': 'static/uploads/demo_videos/lipalink_demo.mp4',
+#             'bio': "LipaLink is a FinTech startup offering a secure, mobile-first API for cross-border payments across African wallets and banks. It enables African SMEs to scale seamlessly through instant digital financial infrastructure."
+#         },
+#         {
+#             'username': 'edusphere',
+#             'email': 'edusphere@test.com',
+#             'company': 'EduSphere',
+#             'industry': 'EdTech',
+#             'location': 'Lagos',
+#             'funding': 1200000,
+#             'valuation': 4000000,
+#             'stage': 'Series A',
+#             'mrr': 18000,
+#             'revenue': 150000,
+#             'user_growth': 35,
+#             'partnerships': 'Nigerian Ministry of Education, Andela',
+#             'tech_stack': 'React, Django, TensorFlow',
+#             'advantage': 'Gamified learning with AI personalization',
+#             'revenue_streams': 'Freemium + Institutional licenses',
+#             'pricing_strategy': 'Subscription + in-app purchases',
+#             'date': datetime(2020, 10, 5),
+#             'logo': 'static/uploads/logos/edusphere_logo.png',
+#             'deck': 'static/uploads/pitch_decks/edusphere_pitch.pdf',
+#             'video': 'static/uploads/demo_videos/edusphere_demo.mp4',
+#             'bio': "EduSphere is a pan-African EdTech platform that provides gamified, AI-personalized learning for K-12 students. Our platform blends local curricula with interactive learning to drive engagement and measurable outcomes."
+#         },
+#         {
+#             'username': 'cargoloop',
+#             'email': 'cargoloop@test.com',
+#             'company': 'CargoLoop',
+#             'industry': 'LogisticsTech',
+#             'location': 'Kampala',
+#             'funding': 850000,
+#             'valuation': 3000000,
+#             'stage': 'Series A',
+#             'mrr': 10000,
+#             'revenue': 100000,
+#             'user_growth': 25,
+#             'partnerships': 'Uganda Truckers Association, SafeBoda',
+#             'tech_stack': 'Vue.js, Node.js, MQTT',
+#             'advantage': 'Smart logistics & route optimization in East Africa',
+#             'revenue_streams': 'SaaS + logistics data licensing',
+#             'pricing_strategy': 'Usage-based + monthly plans',
+#             'date': datetime(2019, 8, 15),
+#             'logo': 'static/uploads/logos/cargoloop_logo.png',
+#             'deck': 'static/uploads/pitch_decks/cargoloop_pitch.pdf',
+#             'video': 'static/uploads/demo_videos/cargoloop_demo.mp4',
+#             'bio': "CargoLoop digitizes East Africa’s logistics sector by offering real-time truck tracking, smart routing, and transparent SLAs for B2B deliveries. Our platform improves delivery reliability and reduces cost-to-serve."
+#         }
+#     ]
+
+#     for item in data:
+#         user = create_user(item['username'], item['email'], 'password123', 'startup', bio=item['bio'])
+#         if user:
+#             startup = Startup(
+#                 user_id=user.id,
+#                 company_name=item['company'],
+#                 industry=item['industry'],
+#                 location=item['location'],
+#                 funding_needed=item['funding'],
+#                 valuation=item['valuation'],
+#                 stage=item['stage'],
+#                 mrr=item['mrr'],
+#                 revenue=item['revenue'],
+#                 user_growth=item['user_growth'],
+#                 partnerships=item['partnerships'],
+#                 tech_stack=item['tech_stack'],
+#                 competitive_advantage=item['advantage'],
+#                 revenue_streams=item['revenue_streams'],
+#                 pricing_strategy=item['pricing_strategy'],
+#                 founding_date=item['date'],
+#                 logo=item['logo'],
+#                 pitch_deck=item['deck'],
+#                 demo_video=item['video'],
+                
+#             )
+#             db.session.add(startup)
+
+#     db.session.commit()
+#     print("✅ Seeded TLcom-matching startups successfully.")
+
+# # 🔚 Make sure it's called properly when script is run
+# if __name__ == '__main__':
+#     with app.app_context():
+#         seed_tlcom_startups()
 
 
 
@@ -47,6 +228,48 @@ print("All specified bios updated.")
 
 
 
+
+# from app import create_app, db
+# from app.models import User
+
+# app = create_app()
+# app.app_context().push()
+
+# bios_by_id = {
+#     4: "We are revolutionizing patient diagnostics with mobile labs and AI-assisted triage tools for rural clinics.",
+#     5: "We design gamified e-learning platforms to keep students engaged, even in low-resource environments.",
+#     6: "Our platform empowers farmers with weather insights and smart crop planning tools.",
+#     7: "We connect smallholder farmers directly to buyers using blockchain to ensure fair pricing.",
+#     8: "We develop wearable health monitors to track vitals in real-time and share them with care providers.",
+#     9: "We offer micro-investment opportunities through mobile wallets to increase financial inclusion.",
+#     10: "We're using drone tech to monitor soil health and optimize yields for medium-scale farms.",
+#     11: "Our telemedicine platform brings affordable specialist care to underserved urban zones.",
+#     12: "We simplify SME lending through AI-based risk profiling and a seamless mobile application process.",
+#     45: "Perfect_startup is building Kenya’s first decentralized finance platform focused on youth-led businesses.",
+#     46: "We develop AI tools for recycling management and carbon tracking for urban cities.",
+#     47: "We help rural farmers switch to sustainable irrigation and provide real-time pest alerts via SMS.",
+#     3: "Our e-commerce site specializes in made-in-Africa fashion, shipped nationwide within 48 hours.",
+#     48: "We're improving maternal healthcare access by combining community health workers with mobile tools.",
+#     41: "Our hybrid solar battery packs bring power to remote schools and clinics off the national grid.",
+#     42: "We offer precision agriculture tech bundled with agribusiness mentorship for rural cooperatives.",
+#     49: "We’re creating payment APIs for Africa’s informal sector, starting with local merchants.",
+#     54: "We build AI models that localize content recommendations for regional media streaming platforms.",
+#     55: "Our fintech tools help first-time investors manage risk and automate savings goals.",
+#     56: "We digitize inventory and customer loyalty programs for small retail shops in emerging markets.",
+# }
+
+# # Update bios
+# for user_id, bio_text in bios_by_id.items():
+#     user = User.query.get(user_id)
+#     if user:
+#         user.bio = bio_text
+#         print(f"Updated bio for user ID {user_id}")
+#     else:
+#         print(f"User ID {user_id} not found.")
+
+# # Commit changes
+# db.session.commit()
+# print("All specified bios updated.")
 
 
 

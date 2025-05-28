@@ -5,50 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Digihub{% endblock %}</title>
     
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/cosmo/bootstrap.min.css"><!--For the themes-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/cosmo/bootstrap.min.css"><!--Theme-->
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"><!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"><!-- Animate.css for animations -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-
-
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light">
-        <div class="container">
-            <a class="navbar-brand text-dark fw-bold fs-4" href="{{ url_for('routes.home') }}">
-                <i class="bi bi-lightbulb-fill fs-4"></i> DIGIHUB
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">Tap this</button>
-                <span class="navbar-toggler-icon"></span>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link text-dark fw-bold" href="javascript:history.back()">
-                          <i class="bi bi-arrow-left-circle me-1 "></i> Back
-                        </a>
-                      </li>                      
-                    <li class="nav-item"><a class="nav-link fw-bold text-dark" href="{{ url_for('routes.home') }}"><i class="bi bi-house-door"></i> Home</a></li>
-                    <li class="nav-item"><a class="nav-link fw-bold text-dark" href="{{ url_for('routes.register') }}"><i class="bi bi-person-plus"></i> Register</a></li>
-                    <li class="nav-item"><a class="nav-link fw-bold text-dark" href="{{ url_for('routes.login') }}"><i class="bi bi-box-arrow-in-right"></i> Login</a></li>
-                </ul>
-            </div>
-        </div>
-
-        <a class="nav-link position-relative" href="{{ url_for('routes.notifications') }}">
-            <i class="bi bi-bell"></i>
-            {% if unread_count > 0 %}
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                    {{ unread_count }}
-                </span>
-            {% endif %}
+{% set current_endpoint = request.endpoint %}
+<nav class="navbar navbar-expand-lg navbar-light">
+    <div class="container">
+        <a class="navbar-brand text-dark fw-bold fs-4" href="{{ url_for('routes.home') }}">
+            <i class="bi bi-lightbulb-fill fs-4"></i> DIGIHUB
         </a>
-        
-    </nav>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">Tap this</button>
+        <span class="navbar-toggler-icon"></span>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link text-dark fw-bold" href="javascript:history.back()">
+                        <i class="bi bi-arrow-left-circle me-1"></i> Back
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-bold text-dark" href="{{ url_for('routes.home') }}">
+                        <i class="bi bi-house-door"></i> Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-bold text-dark" href="{{ url_for('routes.register') }}">
+                        <i class="bi bi-person-plus"></i> Register
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-bold text-dark" href="{{ url_for('routes.login') }}">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </a>
+                </li>
+
+                {% if current_user.is_authenticated and current_endpoint not in ['routes.home', 'routes.login', 'routes.register'] %}
+                    <!-- Back to Dashboard -->
+                    <li class="nav-item">
+                        <a class="nav-link fw-bold text-dark" href="{{ url_for('routes.dashboard') }}">
+                            <i class="bi bi-speedometer2"></i>Dashboard
+                        </a>
+                    </li>
+
+                    <!-- Notifications -->
+                    <li class="nav-item">
+                        <a class="nav-link position-relative text-dark fw-bold" href="{{ url_for('routes.notifications') }}">
+                            <i class="bi bi-bell"></i> <b>Notifications</b>
+                            {% if unread_count > 0 %}
+                                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                                    <span class="visually-hidden">New notifications</span>
+                                </span>
+                            {% endif %}
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
 
     <div class="container mt-4">
         {% with messages = get_flashed_messages(with_categories=true) %}

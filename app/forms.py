@@ -63,11 +63,12 @@ class StartupForm(FlaskForm):
     customer_acquisition_cost = FloatField('Customer Acquisition Cost', validators=[Optional()])
 
     stage = SelectField('Funding Stage', choices=[
-        ('pre-seed', 'Pre-Seed'), 
-        ('seed', 'Seed'),
-        ('series-a', 'Series A'),
-        ('series-b', 'Series B'),
-        ('growth', 'Growth Stage')
+        ('Pre-Seed', 'Pre-Seed'), 
+        ('Seed', 'Seed'),
+        ('Pre-Series A', 'Pre-Series A'),
+        ('Series A', 'Series A'),
+        ('Series B', 'Series B'),
+        ('Growth Stage', 'Growth Stage')
     ])
 
     funding_needed = FloatField('Funding Needed (KES)', validators=[Optional(), NumberRange(min=0)])

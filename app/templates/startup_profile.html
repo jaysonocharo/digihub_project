@@ -7,7 +7,6 @@
 
       <!-- LEFT COLUMN -->
       <div class="col-md-4 bg-light text-center p-4 border-end">
-        <!-- Logo -->
         {% if startup.logo %}
           <img src="{{ url_for('static', filename=startup.logo.replace('\\', '/')) }}"
                alt="{{ startup.company_name }} Logo"
@@ -19,15 +18,12 @@
                class="img-fluid rounded mb-3">
         {% endif %}
 
-        <!-- Bio -->
         <p class="text-muted small">{{ startup.user.bio }}</p>
 
-        <!-- Founder Email -->
         <a href="mailto:{{ startup.user.email }}" class="btn btn-success btn-sm w-100 mb-2">
           <i class="bi bi-envelope"></i> Email Founder
         </a>
 
-        <!-- Contact & Socials -->
         <div class="d-grid gap-2 mt-3">
           {% if startup.phone_number %}
             <a href="tel:{{ startup.phone_number }}" class="btn btn-outline-secondary btn-sm">
@@ -35,7 +31,7 @@
             </a>
           {% endif %}
           {% if startup.whatsapp %}
-            <a href="https://wa.me/{{ startup.whatsapp }}" target="_blank" rel = "noopener" class="btn btn-outline-success btn-sm">
+            <a href="https://wa.me/{{ startup.whatsapp }}" target="_blank" rel="noopener" class="btn btn-outline-success btn-sm">
               <i class="bi bi-whatsapp"></i> WhatsApp
             </a>
           {% endif %}
@@ -77,9 +73,27 @@
         <h5 class="text-primary"><i class="bi bi-graph-up-arrow me-1"></i> Business Metrics</h5>
         <ul class="list-unstyled mb-3">
           <li><strong>Team Size:</strong> {{ startup.team_size }}</li>
-          <li><strong>Revenue:</strong> ${{ startup.revenue }}</li>
-          <li><strong>MRR:</strong> ${{ startup.mrr }}</li>
-          <li><strong>User Growth:</strong> {{ startup.user_growth }}%</li>
+          <li><strong>Revenue:</strong>
+            {% if startup.revenue is not none %}
+              Ksh {{ "{:,.0f}".format(startup.revenue) }}
+            {% else %}
+              Not provided
+            {% endif %}
+          </li>
+          <li><strong>MRR:</strong>
+            {% if startup.mrr is not none %}
+              Ksh {{ "{:,.0f}".format(startup.mrr) }}
+            {% else %}
+              Not provided
+            {% endif %}
+          </li>
+          <li><strong>User Growth:</strong>
+            {% if startup.user_growth is not none %}
+              {{ "%.2f"|format(startup.user_growth) }}%
+            {% else %}
+              Not provided
+            {% endif %}
+          </li>
           {% if startup.partnerships %}
             <li><strong>Partnerships:</strong> {{ startup.partnerships }}</li>
           {% endif %}
@@ -89,8 +103,20 @@
         <h5 class="text-success"><i class="bi bi-currency-dollar me-1"></i> Fundraising</h5>
         <ul class="list-unstyled mb-3">
           <li><strong>Stage:</strong> {{ startup.stage }}</li>
-          <li><strong>Funding Needed:</strong> ${{ startup.funding_needed }}</li>
-          <li><strong>Valuation:</strong> ${{ startup.valuation }}</li>
+          <li><strong>Funding Needed:</strong>
+            {% if startup.funding_needed is not none %}
+              Ksh {{ "{:,.0f}".format(startup.funding_needed) }}
+            {% else %}
+              Not provided
+            {% endif %}
+          </li>
+          <li><strong>Valuation:</strong>
+            {% if startup.valuation is not none %}
+              Ksh {{ "{:,.0f}".format(startup.valuation) }}
+            {% else %}
+              Not provided
+            {% endif %}
+          </li>
           {% if startup.previous_funding %}
             <li><strong>Previous Funding:</strong> {{ startup.previous_funding }}</li>
           {% endif %}
@@ -107,8 +133,20 @@
         <!-- Market -->
         <h5 class="text-info"><i class="bi bi-globe2 me-1"></i> Market Insights</h5>
         <ul class="list-unstyled mb-4">
-          <li><strong>TAM:</strong> ${{ startup.tam }}</li>
-          <li><strong>SAM:</strong> ${{ startup.sam }}</li>
+          <li><strong>TAM:</strong>
+            {% if startup.tam is not none %}
+              Ksh {{ "{:,.0f}".format(startup.tam) }}
+            {% else %}
+              Not provided
+            {% endif %}
+          </li>
+          <li><strong>SAM:</strong>
+            {% if startup.sam is not none %}
+              Ksh {{ "{:,.0f}".format(startup.sam) }}
+            {% else %}
+              Not provided
+            {% endif %}
+          </li>
           <li><strong>Competition:</strong> {{ startup.competition }}</li>
         </ul>
 

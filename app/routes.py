@@ -583,39 +583,42 @@ def startup_form():
     if form.validate_on_submit():
         print("Form validated!")
 
-        # Create startup if not exists
         if not startup:
             startup = Startup(user_id=current_user.id)
             db.session.add(startup)
 
-        # -- Assigns all fields (excluding files)
-        startup.company_name = form.company_name.data
-        startup.industry = form.industry.data
-        startup.location = form.location.data
-        startup.founding_date = form.founding_date.data
-        startup.team_size = form.team_size.data
-        startup.revenue_streams = form.revenue_streams.data
-        startup.pricing_strategy = form.pricing_strategy.data
-        startup.customer_acquisition_cost = form.customer_acquisition_cost.data
-        startup.stage = form.stage.data
-        startup.funding_needed = form.funding_needed.data
-        startup.valuation = form.valuation.data
-        startup.previous_funding = form.previous_funding.data
-        startup.revenue = form.revenue.data
-        startup.mrr = form.mrr.data
-        startup.user_growth = form.user_growth.data
-        startup.partnerships = form.partnerships.data
-        startup.tech_stack = form.tech_stack.data
-        startup.ip_rights = form.ip_rights.data
-        startup.competitive_advantage = form.competitive_advantage.data
-        startup.tam = form.tam.data
-        startup.sam = form.sam.data
-        startup.competition = form.competition.data
-        startup.website = form.website.data
-        startup.social_links = form.social_links.data
-        startup.description = form.description.data
+        # Only update fields if the form provides data
+        if form.company_name.data: startup.company_name = form.company_name.data
+        if form.industry.data: startup.industry = form.industry.data
+        if form.location.data: startup.location = form.location.data
+        if form.founding_date.data: startup.founding_date = form.founding_date.data
+        if form.team_size.data: startup.team_size = form.team_size.data
+        if form.revenue_streams.data: startup.revenue_streams = form.revenue_streams.data
+        if form.pricing_strategy.data: startup.pricing_strategy = form.pricing_strategy.data
+        if form.customer_acquisition_cost.data: startup.customer_acquisition_cost = form.customer_acquisition_cost.data
+        if form.stage.data: startup.stage = form.stage.data
+        if form.funding_needed.data: startup.funding_needed = form.funding_needed.data
+        if form.valuation.data: startup.valuation = form.valuation.data
+        if form.previous_funding.data: startup.previous_funding = form.previous_funding.data
+        if form.revenue.data: startup.revenue = form.revenue.data
+        if form.mrr.data: startup.mrr = form.mrr.data
+        if form.user_growth.data: startup.user_growth = form.user_growth.data
+        if form.partnerships.data: startup.partnerships = form.partnerships.data
+        if form.tech_stack.data: startup.tech_stack = form.tech_stack.data
+        if form.ip_rights.data: startup.ip_rights = form.ip_rights.data
+        if form.competitive_advantage.data: startup.competitive_advantage = form.competitive_advantage.data
+        if form.tam.data: startup.tam = form.tam.data
+        if form.sam.data: startup.sam = form.sam.data
+        if form.competition.data: startup.competition = form.competition.data
+        if form.website.data: startup.website = form.website.data
+        if form.social_links.data: startup.social_links = form.social_links.data
+        if form.description.data: startup.description = form.description.data
 
-        # -- Contact & Social Link Formatting for validation
+        if form.phone_number.data:
+            startup.phone_number = form.phone_number.data.strip().replace(" ", "")
+        if form.whatsapp.data:
+            startup.whatsapp = form.whatsapp.data.strip().replace("+", "").replace(" ", "")
+
         def format_social_link(base_url, value):
             if not value:
                 return None
@@ -624,20 +627,12 @@ def startup_form():
                 return value
             return base_url + value
 
-        if form.phone_number.data:
-            startup.phone_number = form.phone_number.data.strip().replace(" ", "")
-
-        if form.whatsapp.data:
-            startup.whatsapp = form.whatsapp.data.strip().replace("+", "").replace(" ", "")
-
         startup.instagram = format_social_link("https://instagram.com/", form.instagram.data)
         startup.facebook = format_social_link("https://facebook.com/", form.facebook.data)
         startup.twitter_x = format_social_link("https://twitter.com/", form.twitter_x.data)
         startup.linkedin = format_social_link("https://linkedin.com/in/", form.linkedin.data)
 
-        # FILE MANAGEMENT(logo, pitch deck, demonstration video)
-
-        # Logo
+        # --- File Uploads: logo, pitch deck, demo video ---
         if form.clear_logo.data and startup.logo:
             delete_file_if_exists(startup.logo)
             startup.logo = None
@@ -647,7 +642,6 @@ def startup_form():
             startup.logo = save_file(form.logo.data, "logos")
             send_notification(current_user.id, "Your logo was uploaded successfully.", category='media')
 
-        # Pitch Deck
         if form.clear_pitch_deck.data and startup.pitch_deck:
             delete_file_if_exists(startup.pitch_deck)
             startup.pitch_deck = None
@@ -657,7 +651,6 @@ def startup_form():
             startup.pitch_deck = save_file(form.pitch_deck.data, "pitch_decks")
             send_notification(current_user.id, "Your pitch deck was uploaded successfully.", category='media')
 
-        # Demo Video
         if form.clear_demo_video.data and startup.demo_video:
             delete_file_if_exists(startup.demo_video)
             startup.demo_video = None
@@ -679,13 +672,15 @@ def startup_form():
     elif request.method == 'POST':
         print(" Validation failed:", form.errors)
 
-    # Pre-fill values for GET request
+    # Pre-fill values for GET
     if request.method == 'GET' and startup:
         for field in form:
             if hasattr(startup, field.name):
                 setattr(field, 'data', getattr(startup, field.name))
 
     return render_template("startup_form.html", form=form, startup=startup)
+
+
 
 
 ############# MENTOR #############

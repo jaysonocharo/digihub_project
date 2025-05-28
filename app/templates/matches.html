@@ -4,85 +4,94 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="mb-4">Top AI-Powered Matches </h2>
+    <h2 class="mb-4">Top AI-Powered Matches</h2>
 
     {% if matches %}
         {% for startup, investor, score, reasons in matches %}
         <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <h5 class="card-title">{{ startup.company_name }} ➝ {{ investor.firm_name }}</h5>
+            <div class="card-body d-flex flex-column flex-md-row align-items-start gap-3">
 
-                <!-- Score Progress Bar (ARIA and CSS valid) -->
-                <div class="mb-2">
-                    <label id="score-label-{{ loop.index }}" class="form-label fw-bold">Match Score:</label>
-                    <div class="progress" style="height: 20px;">
-                        <div class="progress-bar bg-success" 
-                                role="progressbar"
-                                style="width: {{ score | int if score else 0 }}%;"
-                                aria-labelledby="score-label-{{ loop.index }}"
-                                aria-valuemin="0"
-                                aria-valuemax="100"
-                                title="Match Score: {{ score }}%"
-                                aria-valuenow="{{ score | int if score else 0 }}">                                                                                   
-                                {{ score }}%
-                        </div>
-                   
-                    </div>
-                </div>
-
-                <!-- Quick Info -->
-                <p><strong>Startup:</strong> {{ startup.industry }} | {{ startup.location }}</p>
-                <p><strong>Investor Focus:</strong> {{ investor.industry_focus }} | Deal Size: {{ investor.check_size_min }} - {{ investor.check_size_max }}</p>
-
-                <!-- Match Reasons -->
-                {% if reasons %}
-                <p><strong>Criteria met: </strong></p>
-                <ul>
-                    {% for reason in reasons %}
-                        <li>{{ reason }}</li>
-                    {% endfor %}
-                </ul>
+                <!-- Logo Column -->
+                {% if startup.logo %}
+                <img src="{{ url_for('static', filename=startup.logo.replace('\\', '/')) }}"
+                     alt="{{ startup.company_name }} Logo"
+                     class="img-thumbnail"
+                     style="max-height: 80px; max-width: 80px;">
                 {% endif %}
 
-                <!-- Action Buttons -->
-                <div class="mt-3 d-flex flex-wrap gap-2">
-                    <!-- View Startup Profile -->
-                    <a href="{{ url_for('routes.view_startup', startup_id=startup.id) }}"
-                    class="btn btn-outline-primary btn-sm">
-                    View Startup
-                    </a>
+                <!-- Details Column -->
+                <div class="flex-grow-1">
 
-                    <!-- View Pitch Deck -->
-                    {% if startup.pitch_deck %}
-                    <a href="{{ url_for('static', filename=startup.pitch_deck.replace('\\', '/')) }}"
-                    target="_blank"
-                    class="btn btn-outline-success btn-sm">
-                    View Pitch Deck
-                    </a>
+                    <h5 class="card-title">{{ startup.company_name }} </h5>
+
+                    <!-- Score Progress Bar -->
+                    <div class="mb-2">
+                        <label id="score-label-{{ loop.index }}" class="form-label fw-bold">Match Score:</label>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-success" 
+                                 role="progressbar"
+                                 style="width: {{ score | int if score else 0 }}%;"
+                                 aria-labelledby="score-label-{{ loop.index }}"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100"
+                                 title="Match Score: {{ score }}%"
+                                 aria-valuenow="{{ score | int if score else 0 }}">
+                                {{ score }}%
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Info -->
+                    <p><strong>Startup:</strong> {{ startup.industry }} | {{ startup.location }}</p>
+                    <p><strong>Investor Focus:</strong> {{ investor.industry_focus }} | Deal Size: Ksh. {{ "{:,.0f}".format(investor.check_size_min) }} - Ksh. {{ "{:,.0f}".format(investor.check_size_max) }}</p>
+
+
+                    <!-- Match Reasons -->
+                    {% if reasons %}
+                    <p><strong>Criteria met:</strong></p>
+                    <ul>
+                        {% for reason in reasons %}
+                            <li>{{ reason }}</li>
+                        {% endfor %}
+                    </ul>
                     {% endif %}
 
-                    <!-- Watch Demo Video -->
-                    {% if startup.demo_video %}
-                        {% if startup.demo_video.endswith('.mp4') %}
-                        <a href="{{ url_for('static', filename=startup.demo_video.replace('\\', '/')) }}"
-                        target="_blank"
-                        class="btn btn-outline-danger btn-sm">
-                        Watch Demo Video
+                    <!-- Action Buttons -->
+                    <div class="mt-3 d-flex flex-wrap gap-2">
+                        <a href="{{ url_for('routes.view_startup', startup_id=startup.id) }}"
+                           class="btn btn-outline-primary btn-sm">
+                           View Startup
                         </a>
-                        {% else %}
-                        <a href="{{ startup.demo_video }}"
-                        target="_blank"
-                        class="btn btn-outline-danger btn-sm">
-                        Watch Demo Video
+
+                        {% if startup.pitch_deck %}
+                        <a href="{{ url_for('static', filename=startup.pitch_deck.replace('\\', '/')) }}"
+                           target="_blank"
+                           class="btn btn-outline-success btn-sm">
+                           View Pitch Deck
                         </a>
                         {% endif %}
-                    {% endif %}
-                </div>
 
+                        {% if startup.demo_video %}
+                            {% if startup.demo_video.endswith('.mp4') %}
+                            <a href="{{ url_for('static', filename=startup.demo_video.replace('\\', '/')) }}"
+                               target="_blank"
+                               class="btn btn-outline-danger btn-sm">
+                               Watch Demo Video
+                            </a>
+                            {% else %}
+                            <a href="{{ startup.demo_video }}"
+                               target="_blank"
+                               class="btn btn-outline-danger btn-sm">
+                               Watch Demonstration Video
+                            </a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
 
-            </div>
+                </div> <!-- end details column -->
+            </div> <!-- end card body -->
         </div>
-        {% endfor %} 
+        {% endfor %}
     {% else %}
         <div class="alert alert-info">No strong matches (score ≥ 70%) found for your profile yet.</div>
     {% endif %}
@@ -90,7 +99,5 @@
     <a href="{{ url_for('routes.match_feedback') }}" class="btn btn-outline-primary mt-4">
         <i class="bi bi-chat-left-text"></i> Rate Your Matches
     </a>
-      
-
 </div>
 {% endblock %}
